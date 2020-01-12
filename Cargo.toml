@@ -1,7 +1,7 @@
 [package]
-name = "pong2"
+name = "paladin"
 version = "0.1.0"
-authors = []
+authors = ["ToferC"]
 edition = "2018"
 
 [dependencies.amethyst]

@@ -1839,6 +1839,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "paladin"
+version = "0.1.0"
+dependencies = [
+ "amethyst 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "palette"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1984,13 +1991,6 @@ dependencies = [
  "deflate 0.7.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "inflate 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-iter 0.1.39 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "pong2"
-version = "0.1.0"
-dependencies = [
- "amethyst 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

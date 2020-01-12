@@ -1,4 +1,4 @@
-# pong2
+# Paladin
 
 ## How to run
 
