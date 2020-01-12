@@ -1,0 +1,4 @@
+(
+  title: "Paladin",
+  dimensions: Some((1200, 800)),
+)

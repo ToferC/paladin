@@ -1,0 +1,12 @@
+List((
+    spritesheet_width: 366,
+    spritesheet_height: 304,
+    sprites: [
+        (
+            x: 0,
+            y: 0,
+            widht: 366,
+            height: 304,
+        ),
+    ],
+))
