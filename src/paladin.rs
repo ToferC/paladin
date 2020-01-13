@@ -6,8 +6,10 @@ use amethyst::{
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
 };
 
-const ARENA_HEIGHT: f32 = 100.0;
-const ARENA_WIDTH: f32 = 100.0;
+pub const ARENA_HEIGHT: f32 = 900.0;
+pub const ARENA_WIDTH: f32 = 1200.0;
+
+pub const SHIP_SCALING: f32 = 0.20;
 
 const SHIP_HEIGHT: f32 = 16.0;
 const SHIP_WIDTH: f32 = 16.0;
@@ -23,23 +25,23 @@ impl SimpleState for Paladin {
         // `texture` is the pixel data.
         let sprite_sheet_handle = load_sprite_sheet(world);
 
-        world.register::<Ship>();
-
         initialise_ships(world, sprite_sheet_handle);
         initialise_camera(world);
     }
 }
 
 #[derive(PartialEq, Eq)]
-enum Side {
+pub enum Side {
     Light,
     Dark,
 }
 
-struct Ship {
+pub struct Ship {
     pub side: Side,
     pub width: f32,
     pub height: f32,
+    pub agility: f32,
+    pub speed: f32,
 }
 
 impl Ship {
@@ -48,6 +50,8 @@ impl Ship {
             side,
             width: SHIP_WIDTH,
             height: SHIP_HEIGHT,
+            agility: 0.05,
+            speed: 0.75,
         }
     }
 }
@@ -96,8 +100,8 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
     let mut dark_transform = Transform::default();
 
     // rescale ships
-    light_transform.set_scale(math::Vector3::new(0.02, 0.02, 0.02));
-    dark_transform.set_scale(math::Vector3::new(0.02, 0.02, 0.02));
+    light_transform.set_scale(math::Vector3::new(SHIP_SCALING, SHIP_SCALING, SHIP_SCALING));
+    dark_transform.set_scale(math::Vector3::new(SHIP_SCALING, SHIP_SCALING, SHIP_SCALING));
 
     // rotate ships
     light_transform.rotate_2d(1.60);
@@ -106,8 +110,8 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
 
     // Correctly position the ships.
     let y = ARENA_HEIGHT / 2.0;
-    light_transform.set_translation_xyz(SHIP_WIDTH * 0.5, y, 0.0);
-    dark_transform.set_translation_xyz(ARENA_WIDTH - SHIP_WIDTH * 0.5, y, 0.0);
+    light_transform.set_translation_xyz(SHIP_WIDTH * 3.0, y, 0.0);
+    dark_transform.set_translation_xyz(ARENA_WIDTH - SHIP_WIDTH * 3.0, y, 0.0);
 
     // Assign the sprites for the ships
     let sprite_render = SpriteRender {
@@ -115,7 +119,7 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         sprite_number: 0, // ship is the first sprite in the sprite_sheet
     };
 
-    // Create a light plank entity.
+    // Create a light ship entity.
     world
         .create_entity()
         .with(sprite_render.clone())
@@ -123,7 +127,7 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(light_transform)
         .build();
 
-    // Create dark plank entity.
+    // Create dark ship entity.
     world
         .create_entity()
         .with(sprite_render.clone())
