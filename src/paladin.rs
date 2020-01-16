@@ -11,6 +11,10 @@ pub const ARENA_WIDTH: f32 = 1200.0;
 
 pub const SHIP_SCALING: f32 = 0.20;
 
+pub const LASER_VELOCITY_X: f32 = 75.0;
+pub const LASER_VELOCITY_Y: f32 = 50.0;
+pub const LASER_RADIUS: f32 = 1.0;
+
 const SHIP_HEIGHT: f32 = 16.0;
 const SHIP_WIDTH: f32 = 16.0;
 
@@ -23,9 +27,15 @@ impl SimpleState for Paladin {
         // Load the spritesheet necessary to render the graphics.
         // `spritesheet` is the layout of the sprites on the image;
         // `texture` is the pixel data.
-        let sprite_sheet_handle = load_sprite_sheet(world);
 
-        initialise_ships(world, sprite_sheet_handle);
+        world.register::<Laser>();
+
+
+        let ship_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
+        let bullet_sheet_handle = load_sprite_sheet(world, "texture/bullet");
+
+        initialise_ships(world, ship_sheet_handle);
+        shoot_laser(world, bullet_sheet_handle);
         initialise_camera(world);
     }
 }
@@ -41,7 +51,8 @@ pub struct Ship {
     pub width: f32,
     pub height: f32,
     pub agility: f32,
-    pub speed: f32,
+    pub acceleration: f32,
+    pub velocity: [f32; 2],
 }
 
 impl Ship {
@@ -51,7 +62,8 @@ impl Ship {
             width: SHIP_WIDTH,
             height: SHIP_HEIGHT,
             agility: 0.05,
-            speed: 0.75,
+            acceleration: 0.75,
+            velocity: [0.0, 0.0],
         }
     }
 }
@@ -60,12 +72,41 @@ impl Component for Ship {
     type Storage = DenseVecStorage<Self>;
 }
 
-fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
+pub struct Laser {
+    pub velocity: [f32; 2],
+    pub radius: f32,
+}
+
+impl Component for Laser {
+    type Storage = DenseVecStorage<Self>;
+}
+
+fn shoot_laser(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
+    let mut local_transform = Transform::default();
+    local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+
+    let sprite_render = SpriteRender {
+        sprite_sheet: sprite_sheet_handle,
+        sprite_number: 0,
+    };
+
+    world
+        .create_entity()
+        .with(sprite_render)
+        .with(Laser {
+            radius: LASER_RADIUS,
+            velocity: [LASER_VELOCITY_X, LASER_VELOCITY_Y],
+        })
+        .with(local_transform)
+        .build();
+}
+
+fn load_sprite_sheet(world: &mut World, path: &str) -> Handle<SpriteSheet> {
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
         loader.load(
-            "texture/ship_spritesheet.png",
+            format!("{}.png", path),
             ImageFormat::default(),
             (),
             &texture_storage,
@@ -74,7 +115,7 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
     let loader = world.read_resource::<Loader>();
     let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
     loader.load(
-        "texture/ship_spritesheet.ron",
+        format!("{}.ron", path),
         SpriteSheetFormat(texture_handle),
         (),
         &sprite_sheet_store,
