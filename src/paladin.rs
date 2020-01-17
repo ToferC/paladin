@@ -18,7 +18,10 @@ pub const LASER_RADIUS: f32 = 1.0;
 const SHIP_HEIGHT: f32 = 16.0;
 const SHIP_WIDTH: f32 = 16.0;
 
-pub struct Paladin;
+#[derive(Default)]
+pub struct Paladin {
+    laser_life_timer: Option<f32>,
+}
 
 impl SimpleState for Paladin {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -37,6 +40,10 @@ impl SimpleState for Paladin {
         initialise_ships(world, ship_sheet_handle);
         shoot_laser(world, bullet_sheet_handle);
         initialise_camera(world);
+    }
+
+    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+        Trans::None
     }
 }
 

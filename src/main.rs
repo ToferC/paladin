@@ -39,6 +39,13 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
         .with(systems::MovementSystem, "movement_system", &["input_system"])
+        .with(
+            systems::MoveLaserSystem, "laser_system", &[])
+        .with(
+            systems::CollisionSystem,
+            "collision_system",
+            &["laser_system"],
+        )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 // The RenderToWindow plugin provides all the scaffolding for opening a window and
@@ -51,7 +58,7 @@ fn main() -> amethyst::Result<()> {
                 .with_plugin(RenderFlat2D::default()),
         )?;
 
-    let mut game = Application::new(assets_dir, Paladin, game_data)?;
+    let mut game = Application::new(assets_dir, Paladin::default(), game_data)?;
     game.run();
     Ok(())
 }
