@@ -40,7 +40,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?
         .with(systems::MovementSystem, "movement_system", &["input_system"])
         .with(
-            systems::MoveLaserSystem, "laser_system", &[])
+            systems::LaserSystem, "laser_system", &["input_system"])
         .with(
             systems::CollisionSystem,
             "collision_system",

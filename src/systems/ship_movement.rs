@@ -19,6 +19,17 @@ impl<'s> System<'s> for MovementSystem {
 
     fn run(&mut self, (mut transforms, mut ships, input, time): Self::SystemData) {
         for (ship, transform) in (&mut ships, &mut transforms).join() {
+
+            // does ship shoot?
+            let shoot = match ship.side {
+                Side::Light => input.action_is_down("shoot").unwrap_or(false),
+                _ => false,
+            };
+
+            if shoot {
+                println!{"PEW PEW"};
+            }
+
             let movement = match ship.side {
                 Side::Light => input.axis_value("rotate"),
                 _ => None,
@@ -26,7 +37,6 @@ impl<'s> System<'s> for MovementSystem {
             if let Some(mv_amount) = movement {
                 if mv_amount != 0.0 {
                     let scaled_amount = ship.agility * mv_amount as f32;
-                    println!("Moving: {}", scaled_amount);
                     transform.rotate_2d(scaled_amount);
                 }
             }

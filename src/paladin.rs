@@ -14,6 +14,7 @@ pub const SHIP_SCALING: f32 = 0.20;
 pub const LASER_VELOCITY_X: f32 = 75.0;
 pub const LASER_VELOCITY_Y: f32 = 50.0;
 pub const LASER_RADIUS: f32 = 1.0;
+pub const LASER_MAX_LIFE: f32 = 8.0;
 
 const SHIP_HEIGHT: f32 = 16.0;
 const SHIP_WIDTH: f32 = 16.0;
@@ -40,10 +41,6 @@ impl SimpleState for Paladin {
         initialise_ships(world, ship_sheet_handle);
         shoot_laser(world, bullet_sheet_handle);
         initialise_camera(world);
-    }
-
-    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
-        Trans::None
     }
 }
 
@@ -82,6 +79,7 @@ impl Component for Ship {
 pub struct Laser {
     pub velocity: [f32; 2],
     pub radius: f32,
+    pub timer: f32,
 }
 
 impl Component for Laser {
@@ -103,6 +101,7 @@ fn shoot_laser(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
         .with(Laser {
             radius: LASER_RADIUS,
             velocity: [LASER_VELOCITY_X, LASER_VELOCITY_Y],
+            timer: LASER_MAX_LIFE,
         })
         .with(local_transform)
         .build();
