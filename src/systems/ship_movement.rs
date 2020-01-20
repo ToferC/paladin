@@ -1,24 +1,25 @@
 use amethyst::core::{Transform, SystemDesc, math};
 use amethyst::core::timing::Time;
 use amethyst::derive::SystemDesc;
-use amethyst::ecs::{Join, Read, ReadStorage, System, SystemData, World, WriteStorage};
+use amethyst::ecs::{Join, Read, Entities, ReadStorage, System, SystemData, World, WriteStorage};
 use amethyst::input::{InputHandler, StringBindings};
 
-use crate::paladin::{Ship, Side, ARENA_HEIGHT, ARENA_WIDTH};
+use crate::paladin::{Ship, Side, Laser, ARENA_HEIGHT, ARENA_WIDTH, LASER_RADIUS, };
 
 #[derive(SystemDesc)]
 pub struct MovementSystem;
 
 impl<'s> System<'s> for MovementSystem {
     type SystemData = (
+        Entities<'s>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Ship>,
         Read<'s, InputHandler<StringBindings>>,
         Read<'s, Time>,
     );
 
-    fn run(&mut self, (mut transforms, mut ships, input, time): Self::SystemData) {
-        for (ship, transform) in (&mut ships, &mut transforms).join() {
+    fn run(&mut self, (entities, mut transforms, mut ships, input, time): Self::SystemData) {
+        for (entity, ship, transform) in (entities, &mut ships, &mut transforms).join() {
 
             // does ship shoot?
             let shoot = match ship.side {
@@ -28,6 +29,17 @@ impl<'s> System<'s> for MovementSystem {
 
             if shoot {
                 println!{"PEW PEW"};
+                let mut transform = transform.clone();
+
+                let e = entities.create();
+
+                let mut l = Laser {
+                    radius: LASER_RADIUS,
+                    timer: 0.0,
+                    velocity: ship.laser_velocity,
+                }
+
+                e
             }
 
             let movement = match ship.side {

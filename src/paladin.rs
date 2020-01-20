@@ -57,6 +57,7 @@ pub struct Ship {
     pub agility: f32,
     pub acceleration: f32,
     pub velocity: [f32; 2],
+    pub laser_velocity: f32,
 }
 
 impl Ship {
@@ -68,6 +69,7 @@ impl Ship {
             agility: 0.05,
             acceleration: 0.75,
             velocity: [0.0, 0.0],
+            laser_velocity: 150.0,
         }
     }
 }
