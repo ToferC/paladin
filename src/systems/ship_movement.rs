@@ -37,9 +37,9 @@ impl<'s> System<'s> for MovementSystem {
                     radius: LASER_RADIUS,
                     timer: 0.0,
                     velocity: ship.laser_velocity,
-                }
+                };
 
-                e
+                entities.insert(l, transform);
             }
 
             let movement = match ship.side {
