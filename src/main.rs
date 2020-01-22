@@ -38,13 +38,18 @@ fn main() -> amethyst::Result<()> {
         // Add the transform bundle which handles tracking entity positions
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
-        .with(systems::MovementSystem, "movement_system", &["input_system"])
+        .with(systems::MovementSystem, "movement_system", &["input_system"]
+        )
         .with(
-            systems::LaserSystem, "laser_system", &["input_system"])
+            systems::LaserSystem, "laser_system", &["input_system"]
+        )
+        .with(
+            systems::PhysicsSystem, "physics_system", &["movement_system"]
+        )
         .with(
             systems::CollisionSystem,
             "collision_system",
-            &["laser_system"],
+            &["laser_system", "physics_system"],
         )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()

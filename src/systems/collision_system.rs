@@ -4,7 +4,7 @@ use amethyst::{
     ecs::prelude::{Join, ReadStorage, System, SystemData, World, WriteStorage},
 };
 
-use crate::paladin::{Laser, Ship};
+use crate::paladin::{Laser, Ship, LASER_RADIUS};
 
 #[derive(SystemDesc)]
 pub struct CollisionSystem;
@@ -28,10 +28,10 @@ impl<'s> System<'s> for CollisionSystem {
                 if point_in_rect(
                     laser_x,
                     laser_y,
-                    ship_x - laser.radius,
-                    ship_y - laser.radius,
-                    ship_x + ship.width + laser.radius,
-                    ship_y + ship.height + laser.radius,
+                    ship_x - LASER_RADIUS,
+                    ship_y - LASER_RADIUS,
+                    ship_x + ship.width + LASER_RADIUS,
+                    ship_y + ship.height + LASER_RADIUS,
                 ) {
                     println!("Hit!")
                 }

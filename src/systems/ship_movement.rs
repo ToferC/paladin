@@ -1,10 +1,11 @@
 use amethyst::core::{Transform, SystemDesc, math};
 use amethyst::core::timing::Time;
+use amethyst::core::math::Vector3;
 use amethyst::derive::SystemDesc;
-use amethyst::ecs::{Join, Read, Entities, ReadStorage, System, SystemData, World, WriteStorage};
+use amethyst::ecs::{Join, Read, Entities, Entity, LazyUpdate, ReadStorage, System, SystemData, World, WriteStorage};
 use amethyst::input::{InputHandler, StringBindings};
 
-use crate::paladin::{Ship, Side, Laser, ARENA_HEIGHT, ARENA_WIDTH, LASER_RADIUS, };
+use crate::paladin::{Ship, Side, Laser, ARENA_HEIGHT, ARENA_WIDTH, LASER_RADIUS};
 
 #[derive(SystemDesc)]
 pub struct MovementSystem;
@@ -14,33 +15,15 @@ impl<'s> System<'s> for MovementSystem {
         Entities<'s>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Ship>,
+        WriteStorage<'s, Laser>,
         Read<'s, InputHandler<StringBindings>>,
         Read<'s, Time>,
+        Read<'s, LazyUpdate>,
     );
 
-    fn run(&mut self, (entities, mut transforms, mut ships, input, time): Self::SystemData) {
-        for (entity, ship, transform) in (entities, &mut ships, &mut transforms).join() {
+    fn run(&mut self, (entities, mut transforms, mut ships, mut lasers, input, time, lazy): Self::SystemData) {
 
-            // does ship shoot?
-            let shoot = match ship.side {
-                Side::Light => input.action_is_down("shoot").unwrap_or(false),
-                _ => false,
-            };
-
-            if shoot {
-                println!{"PEW PEW"};
-                let mut transform = transform.clone();
-
-                let e = entities.create();
-
-                let mut l = Laser {
-                    radius: LASER_RADIUS,
-                    timer: 0.0,
-                    velocity: ship.laser_velocity,
-                };
-
-                entities.insert(l, transform);
-            }
+        for (ship, transform) in (&mut ships, &mut transforms).join() {
 
             let movement = match ship.side {
                 Side::Light => input.axis_value("rotate"),
@@ -65,9 +48,6 @@ impl<'s> System<'s> for MovementSystem {
                 ship.velocity[1] += added.y;
 
             }
-
-            transform.prepend_translation_x(ship.velocity[0]);
-            transform.prepend_translation_y(ship.velocity[1]);
 
 
             // wrap arena
@@ -101,8 +81,11 @@ impl<'s> System<'s> for MovementSystem {
             {
                 transform.translation_mut().x = ARENA_WIDTH + ship.width;
             }
+        }
 
-
+        for (ship, transform) in (&ships, &mut transforms).join() {
+            transform.prepend_translation_x(ship.velocity[0]);
+            transform.prepend_translation_y(ship.velocity[1]);
         }
     }
 }

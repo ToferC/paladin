@@ -4,7 +4,7 @@ use amethyst::derive::SystemDesc;
 use amethyst::ecs::{Join, Read, ReadStorage, System, SystemData, World, WriteStorage};
 use amethyst::input::{InputHandler, StringBindings};
 
-use crate::paladin::{Ship, Side, ARENA_HEIGHT, ARENA_WIDTH};
+use crate::paladin::{Physical, ARENA_HEIGHT, ARENA_WIDTH};
 
 #[derive(SystemDesc)]
 pub struct PhysicsSystem;
@@ -12,51 +12,48 @@ pub struct PhysicsSystem;
 impl<'s> System<'s> for PhysicsSystem {
     type SystemData = (
         WriteStorage<'s, Transform>,
+        ReadStorage<'s, Physical>,
         Read<'s, Time>,
     );
 
-    fn run(&mut self, (mut transforms, time): Self::SystemData) {
-        for transform in &mut transforms {
+    fn run(&mut self, (mut transforms, physicals, time): Self::SystemData) {
+        for (transform, physical) in (&mut transforms, &physicals).join() {
 
-            
-
-            transform.prepend_translation_x(ship.velocity[0]);
-            transform.prepend_translation_y(ship.velocity[1]);
+            transform.prepend_translation_x(physical.velocity[0]);
+            transform.prepend_translation_y(physical.velocity[1]);
 
 
             // wrap arena
-            let ship_x = transform.translation().x;
-            let ship_y = transform.translation().y;
+            let physical_x = transform.translation().x;
+            let physical_y = transform.translation().y;
 
             // top edge
-            if (ship_y <= ship.height && ship.velocity[1] < 0.0)
-            || (ship_y >= ARENA_HEIGHT - ship.height && ship.velocity[1] > 0.0)
+            if (physical_y <= physical.radius && physical.velocity[1] < 0.0)
+            || (physical_y >= ARENA_HEIGHT - physical.radius && physical.velocity[1] > 0.0)
             {
-                transform.translation_mut().y = 0.0 - ship.height;
+                transform.translation_mut().y = 0.0 - physical.radius;
             }
 
             // bottom edge
-            if (ship_y >= ship.height + ARENA_HEIGHT && ship.velocity[1] > 0.0)
-            || (ship_y <= ship.height && ship.velocity[1] < 0.0)
+            if (physical_y >= physical.radius + ARENA_HEIGHT && physical.velocity[1] > 0.0)
+            || (physical_y <= physical.radius && physical.velocity[1] < 0.0)
             {
-                transform.translation_mut().y = ARENA_HEIGHT + ship.height;
+                transform.translation_mut().y = ARENA_HEIGHT + physical.radius;
             }
 
             // left edge
-            if (ship_x <= ship.width && ship.velocity[0] < 0.0)
-            || (ship_x >= ARENA_WIDTH - ship.width && ship.velocity[0] > 0.0)
+            if (physical_x <= physical.radius && physical.velocity[0] < 0.0)
+            || (physical_x >= ARENA_WIDTH - physical.radius && physical.velocity[0] > 0.0)
             {
-                transform.translation_mut().x = 0.0 - ship.height;
+                transform.translation_mut().x = 0.0 - physical.radius;
             }
 
             // right edge
-            if (ship_x >= ship.width + ARENA_WIDTH && ship.velocity[0] > 0.0)
-            || (ship_x <= ship.width && ship.velocity[0] < 0.0)
+            if (physical_x >= physical.radius + ARENA_WIDTH && physical.velocity[0] > 0.0)
+            || (physical_x <= physical.radius && physical.velocity[0] < 0.0)
             {
-                transform.translation_mut().x = ARENA_WIDTH + ship.width;
+                transform.translation_mut().x = ARENA_WIDTH + physical.radius;
             }
-
-
         }
     }
 }
