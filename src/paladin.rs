@@ -100,7 +100,7 @@ impl Component for Laser {
 impl Laser {
     pub fn new() -> Laser {
         Laser {
-            timer: 0.0,
+            timer: 6.0,
         }
     }
 }
