@@ -16,8 +16,8 @@ pub const LASER_VELOCITY_Y: f32 = 50.0;
 pub const LASER_RADIUS: f32 = 1.0;
 pub const LASER_MAX_LIFE: f32 = 8.0;
 
-const SHIP_HEIGHT: f32 = 16.0;
-const SHIP_WIDTH: f32 = 16.0;
+const SHIP_HEIGHT: f32 = 32.0;
+const SHIP_WIDTH: f32 = 32.0;
 
 #[derive(Default)]
 pub struct Paladin {

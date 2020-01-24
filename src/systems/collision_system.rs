@@ -1,10 +1,10 @@
 use amethyst::{
     core::{Transform, SystemDesc},
     derive::SystemDesc,
-    ecs::prelude::{Join, ReadStorage, System, SystemData, World, WriteStorage},
+    ecs::prelude::{Join, ReadStorage, Entities, System, SystemData, World, WriteStorage},
 };
 
-use crate::paladin::{Laser, Ship, LASER_RADIUS};
+use crate::paladin::{Laser, Physical, Ship, LASER_RADIUS};
 
 #[derive(SystemDesc)]
 pub struct CollisionSystem;
@@ -14,14 +14,18 @@ impl<'s> System<'s> for CollisionSystem {
         ReadStorage<'s, Laser>,
         ReadStorage<'s, Ship>,
         ReadStorage<'s, Transform>,
+        WriteStorage<'s, Physical>,
+        Entities<'s>,
     );
 
-    fn run(&mut self, (lasers, ships, transforms): Self::SystemData) {
-        for (laser, transform) in (&lasers, &transforms).join() {
+    fn run(&mut self, (lasers, ships, mut transforms, mut physicals, entities): Self::SystemData) {
+        
+        // laser collision
+        for (laser, transform, entity) in (&lasers, &transforms, &entities).join() {
             let laser_x = transform.translation().x;
             let laser_y = transform.translation().y;
 
-            for (ship, ship_transform) in (&ships, &transforms).join() {
+            for (ship, ship_transform, physical) in (&ships, &transforms, &mut physicals).join() {
                 let ship_x = ship_transform.translation().x;
                 let ship_y = ship_transform.translation().y;
 
@@ -33,7 +37,10 @@ impl<'s> System<'s> for CollisionSystem {
                     ship_x + ship.width + LASER_RADIUS,
                     ship_y + ship.height + LASER_RADIUS,
                 ) {
-                    println!("Hit!")
+                    println!("Hit!");
+                    physical.velocity[0] += laser_x * 0.001;
+                    physical.velocity[1] += laser_y * 0.001;
+                    entities.delete(entity).expect("Unable to delete laser");
                 }
             }
         }
