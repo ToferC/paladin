@@ -44,7 +44,7 @@ impl<'s> System<'s> for LaserSystem {
                 laser_t.set_scale(Vector3::new(4.0, 4.0, 0.0));
 
                 
-                let mut physical = Physical::new(16.0);
+                let mut physical = Physical::new(16.0, 1.0);
                 physical.velocity = Vector2::new(velocity.x, velocity.y);
 
                 let laser = Laser::new();

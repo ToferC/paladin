@@ -136,6 +136,7 @@ pub struct Physical {
     pub max_velocity: f32,
     pub rotation: f32,
     pub radius: f32,
+    pub mass: f32,
 }
 
 impl Component for Physical {
@@ -143,12 +144,13 @@ impl Component for Physical {
 }
 
 impl Physical {
-    pub fn new(radius: f32) -> Physical {
+    pub fn new(radius: f32, mass: f32) -> Physical {
         Physical {
             velocity: math::Vector2::new(0.0, 0.0),
             max_velocity: 110.0,
             rotation: 0.0,
-            radius: radius
+            radius: radius,
+            mass: mass,
         }
     }
 }
@@ -157,7 +159,7 @@ fn shoot_laser(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
     let mut local_transform = Transform::default();
     local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
 
-    let physical = Physical::new(4.0);
+    let physical = Physical::new(4.0, 0.0);
 
     let sprite_render = SpriteRender {
         sprite_sheet: sprite_sheet_handle,
@@ -239,7 +241,7 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(sprite_render.clone())
         .with(Ship::new(Side::Light))
         .with(light_transform)
-        .with(Physical::new(24.0))
+        .with(Physical::new(24.0, 100.0))
         .build();
 
     // Create dark ship entity.
@@ -248,6 +250,6 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(sprite_render.clone())
         .with(Ship::new(Side::Dark))
         .with(dark_transform)
-        .with(Physical::new(24.0))
+        .with(Physical::new(24.0, 100.0))
         .build();
 }
