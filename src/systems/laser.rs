@@ -41,6 +41,9 @@ impl<'s> System<'s> for LaserSystem {
                 let velocity = transform.rotation() * Vector3::y() * ship.laser_velocity;
 
                 let mut laser_t = transform.clone();
+                
+                laser_t.append_translation(Vector3::new(0.0, 40.0, 0.0));
+
                 laser_t.set_scale(Vector3::new(4.0, 4.0, 0.0));
 
                 

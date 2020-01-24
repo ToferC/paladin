@@ -25,9 +25,10 @@ impl<'s> System<'s> for CollisionSystem {
             let laser_x = transform.translation().x;
             let laser_y = transform.translation().y;
 
-            let phys = physicals.get(entity).expect("Unable to load laser physical");
-            let l_vel = phys.velocity.clone();
-            drop(phys);
+            let laser_vel = {
+                let phys = physicals.get(entity).expect("Unable to load laser physical");
+                phys.velocity.clone()
+            };
 
             for (ship, ship_transform, physical) in (&ships, &transforms, &mut physicals).join() {
                 let ship_x = ship_transform.translation().x;
@@ -44,8 +45,8 @@ impl<'s> System<'s> for CollisionSystem {
                     println!("Hit!");
 
                     // adjust ship vector based on impact
-                    physical.velocity[0] += phys.velocity[0] * 0.001;
-                    physical.velocity[1] += phys.velocity[1] * 0.001;
+                    physical.velocity[0] += laser_vel[0] * 0.01;
+                    physical.velocity[1] += laser_vel[1] * 0.01;
 
                     // delete laser
                     entities.delete(entity).expect("Unable to delete laser");
