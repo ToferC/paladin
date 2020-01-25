@@ -51,6 +51,11 @@ fn main() -> amethyst::Result<()> {
             "collision_system",
             &["laser_system", "physics_system"],
         )
+        .with(
+            systems::WinnerSystem,
+            "winner_system",
+            &["movement_system", "physics_system"],
+        )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 // The RenderToWindow plugin provides all the scaffolding for opening a window and

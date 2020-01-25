@@ -6,8 +6,8 @@ use amethyst::{
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
 };
 
-pub const ARENA_HEIGHT: f32 = 900.0;
-pub const ARENA_WIDTH: f32 = 1200.0;
+pub const ARENA_HEIGHT: f32 = 1024.0;
+pub const ARENA_WIDTH: f32 = 1600.0;
 
 pub const SHIP_SCALING: f32 = 0.20;
 
@@ -16,8 +16,8 @@ pub const LASER_VELOCITY_Y: f32 = 50.0;
 pub const LASER_RADIUS: f32 = 1.0;
 pub const LASER_MAX_LIFE: f32 = 8.0;
 
-const SHIP_HEIGHT: f32 = 32.0;
-const SHIP_WIDTH: f32 = 32.0;
+const SHIP_HEIGHT: f32 = 48.0;
+const SHIP_WIDTH: f32 = 48.0;
 
 #[derive(Default)]
 pub struct Paladin {
@@ -36,12 +36,12 @@ impl SimpleState for Paladin {
 
 
         let ship_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
-        let bullet_sheet_handle = load_sprite_sheet(world, "texture/bullet");
+        let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
 
         LaserRes::initialise(world);
 
         initialise_ships(world, ship_sheet_handle);
-        shoot_laser(world, bullet_sheet_handle);
+        initialize_force_field(world, force_field_sheet_handle);
         initialise_camera(world);
     }
 
@@ -155,25 +155,36 @@ impl Physical {
     }
 }
 
-fn shoot_laser(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
-    let mut local_transform = Transform::default();
-    local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+fn initialize_force_field(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
+    let mut light_transform = Transform::default();
+    let mut dark_transform = Transform::default();
 
-    let physical = Physical::new(4.0, 0.0);
+    // rescale fields
+    light_transform.set_scale(math::Vector3::new(1024.0 / ARENA_WIDTH * 0.05, 1.0, 0.0));
+    dark_transform.set_scale(math::Vector3::new(1024.0 / ARENA_WIDTH * 0.05, 1.0, 0.0));
 
+    // Correctly position the fields.
+    light_transform.set_translation_xyz(0.0, ARENA_HEIGHT / 2.0, 0.0);
+    dark_transform.set_translation_xyz(ARENA_WIDTH, ARENA_HEIGHT / 2.0, 0.0);
+
+    // Assign the sprites for the ships
     let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle,
-        sprite_number: 0,
+        sprite_sheet: sprite_sheet_handle.clone(),
+        sprite_number: 0, // ship is the first sprite in the sprite_sheet
     };
 
+    // Create a light ship entity.
     world
         .create_entity()
-        .with(sprite_render)
-        .with(physical)
-        .with(Laser {
-            timer: LASER_MAX_LIFE,
-        })
-        .with(local_transform)
+        .with(sprite_render.clone())
+        .with(light_transform)
+        .build();
+
+    // Create dark ship entity.
+    world
+        .create_entity()
+        .with(sprite_render.clone())
+        .with(dark_transform)
         .build();
 }
 
@@ -241,7 +252,7 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(sprite_render.clone())
         .with(Ship::new(Side::Light))
         .with(light_transform)
-        .with(Physical::new(24.0, 100.0))
+        .with(Physical::new(48.0, 100.0))
         .build();
 
     // Create dark ship entity.
@@ -250,6 +261,6 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(sprite_render.clone())
         .with(Ship::new(Side::Dark))
         .with(dark_transform)
-        .with(Physical::new(24.0, 100.0))
+        .with(Physical::new(48.0, 100.0))
         .build();
 }

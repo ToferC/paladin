@@ -42,11 +42,10 @@ impl<'s> System<'s> for LaserSystem {
 
                 let mut laser_t = transform.clone();
                 
-                laser_t.append_translation(Vector3::new(0.0, 40.0, 0.0));
+                laser_t.append_translation(Vector3::new(0.0, 55.0, 0.0));
 
                 laser_t.set_scale(Vector3::new(4.0, 4.0, 0.0));
 
-                
                 let mut physical = Physical::new(16.0, 1.0);
                 physical.velocity = Vector2::new(velocity.x, velocity.y);
 
