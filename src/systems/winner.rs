@@ -3,10 +3,11 @@ use amethyst::{
     core::SystemDesc,
     core::math::Vector2,
     derive::SystemDesc,
-    ecs::prelude::{Join, System, SystemData, World, WriteStorage},
+    ui::UiText,
+    ecs::prelude::{Join, System, SystemData, World, Write, WriteStorage, ReadExpect},
 };
 
-use crate::paladin::{Ship, Physical, Side, ARENA_WIDTH, ARENA_HEIGHT};
+use crate::paladin::{Ship, Physical, Side, ScoreBoard, ScoreText, ARENA_WIDTH, ARENA_HEIGHT};
 
 #[derive(SystemDesc)]
 pub struct WinnerSystem;
@@ -15,10 +16,13 @@ impl<'s> System<'s> for WinnerSystem {
     type SystemData = (
         WriteStorage<'s, Ship>,
         WriteStorage<'s, Transform>,
-        WriteStorage<'s, Physical>
+        WriteStorage<'s, Physical>,
+        WriteStorage<'s, UiText>,
+        Write<'s, ScoreBoard>,
+        ReadExpect<'s, ScoreText>,
     );
 
-    fn run(&mut self, (mut ships, mut locals, mut physicals): Self::SystemData) {
+    fn run(&mut self, (mut ships, mut locals, mut physicals, mut ui_text, mut scores, score_text): Self::SystemData) {
 
         let mut did_hit = false;
 
@@ -30,7 +34,12 @@ impl<'s> System<'s> for WinnerSystem {
 
                     if ship_x <= ship.width {
                         // Right player scores
-                        println!("Player 2 scores!");
+                        scores.score_dark = (scores.score_dark + 1)
+                            .min(999);
+
+                        if let Some(text) = ui_text.get_mut(score_text.dark_text) {
+                            text.text = scores.score_dark.to_string();
+                        }
                         true
                     } else {
                         false
@@ -41,7 +50,12 @@ impl<'s> System<'s> for WinnerSystem {
 
                     if ship_x >= ARENA_WIDTH - ship.width {
                         // Left player scores
-                        println!("Player 1 scores!");
+                        scores.score_light = (scores.score_light + 1)
+                            .min(999);
+
+                        if let Some(text) = ui_text.get_mut(score_text.light_text) {
+                            text.text = scores.score_light.to_string();
+                        }                        
                         true
                     } else {
                         false
@@ -73,6 +87,10 @@ impl<'s> System<'s> for WinnerSystem {
                     }
                 }
             }
+            println!(
+                "Score: | {:^3} | {:^3} |",
+                scores.score_light, scores.score_dark
+            );
         }
     }
 }

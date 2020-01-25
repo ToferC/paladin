@@ -12,6 +12,7 @@ use amethyst::{
         types::DefaultBackend,
         RenderingBundle,
     },
+    ui::{RenderUi, UiBundle},
     input::{InputBundle, StringBindings},
     utils::application_root_dir,
 };
@@ -37,7 +38,11 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::default()
         // Add the transform bundle which handles tracking entity positions
         .with_bundle(TransformBundle::new())?
+        // Add input bundle
         .with_bundle(input_bundle)?
+        // Add bundle for UI handling
+        .with_bundle(UiBundle::<StringBindings>::new())?
+        // Add systems
         .with(systems::MovementSystem, "movement_system", &["input_system"]
         )
         .with(
@@ -65,7 +70,8 @@ fn main() -> amethyst::Result<()> {
                         .with_clear(BACKGROUND_COLOR),
                 )
                 // RenderFlat2D plugin is used to render entities with `SpriteRender` component.
-                .with_plugin(RenderFlat2D::default()),
+                .with_plugin(RenderFlat2D::default())
+                .with_plugin(RenderUi::default()),
         )?;
 
     let mut game = Application::new(assets_dir, Paladin::default(), game_data)?;

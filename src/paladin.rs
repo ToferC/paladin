@@ -1,8 +1,9 @@
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
     core::{transform::Transform, math},
-    ecs::prelude::{Component, DenseVecStorage},
+    ecs::prelude::{Component, DenseVecStorage, Entity},
     prelude::*,
+    ui::{Anchor, TtfFormat, UiText, UiTransform},
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
 };
 
@@ -39,6 +40,8 @@ impl SimpleState for Paladin {
         let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
 
         LaserRes::initialise(world);
+
+        initialize_scoreboard(world);
 
         initialise_ships(world, ship_sheet_handle);
         initialize_force_field(world, force_field_sheet_handle);
@@ -130,6 +133,7 @@ impl LaserRes {
     }
 }
 
+/// Physical represents the physics system in the game
 #[derive(Debug)]
 pub struct Physical {
     pub velocity: math::Vector2<f32>,
@@ -155,6 +159,42 @@ impl Physical {
     }
 }
 
+/// Scoreboard contains score data
+#[derive(Default)]
+pub struct ScoreBoard {
+    pub score_light: i32,
+    pub score_dark: i32,
+}
+
+/// ScoreText contains the UI text components that display the score
+pub struct ScoreText {
+    pub light_text: Entity,
+    pub dark_text: Entity,
+}
+
+/// helper function to load sprites
+fn load_sprite_sheet(world: &mut World, path: &str) -> Handle<SpriteSheet> {
+    let texture_handle = {
+        let loader = world.read_resource::<Loader>();
+        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+        loader.load(
+            format!("{}.png", path),
+            ImageFormat::default(),
+            (),
+            &texture_storage,
+        )
+    };
+    let loader = world.read_resource::<Loader>();
+    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
+    loader.load(
+        format!("{}.ron", path),
+        SpriteSheetFormat(texture_handle),
+        (),
+        &sprite_sheet_store,
+    )
+}
+
+/// Initialize force field
 fn initialize_force_field(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
     let mut light_transform = Transform::default();
     let mut dark_transform = Transform::default();
@@ -186,27 +226,6 @@ fn initialize_force_field(world: &mut World, sprite_sheet_handle: Handle<SpriteS
         .with(sprite_render.clone())
         .with(dark_transform)
         .build();
-}
-
-fn load_sprite_sheet(world: &mut World, path: &str) -> Handle<SpriteSheet> {
-    let texture_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load(
-            format!("{}.png", path),
-            ImageFormat::default(),
-            (),
-            &texture_storage,
-        )
-    };
-    let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-    loader.load(
-        format!("{}.ron", path),
-        SpriteSheetFormat(texture_handle),
-        (),
-        &sprite_sheet_store,
-    )
 }
 
 /// Initialise the camera.
@@ -263,4 +282,47 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(dark_transform)
         .with(Physical::new(48.0, 100.0))
         .build();
+}
+
+fn initialize_scoreboard(world: &mut World) {
+    let font = world.read_resource::<Loader>().load(
+        "font/square.ttf",
+        TtfFormat,
+        (),
+        &world.read_resource(),
+    );
+
+    let light_transform = UiTransform::new(
+        "Light".to_string(), Anchor::TopMiddle, Anchor::TopMiddle,
+        -50.0, -50.0, 1.0, 200.0, 50.0,
+    );
+
+    let dark_transform = UiTransform::new(
+        "Dark".to_string(), Anchor::TopMiddle, Anchor::TopMiddle,
+        50.0, -50.0, 1.0, 200.0, 50.0,
+    );
+
+
+    let light_text = world
+        .create_entity()
+        .with(light_transform)
+        .with(UiText::new(
+            font.clone(),
+            "0".to_string(),
+            [1.0, 1.0, 1.0, 1.0],
+            50.0,
+        )).build();
+
+        let dark_text = world
+        .create_entity()
+        .with(dark_transform)
+        .with(UiText::new(
+            font.clone(),
+            "0".to_string(),
+            [1.0, 1.0, 1.0, 1.0],
+            50.0,
+        )).build();
+
+    world.insert(ScoreText { light_text, dark_text });
+
 }
