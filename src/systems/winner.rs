@@ -26,7 +26,9 @@ impl<'s> System<'s> for WinnerSystem {
 
         let mut did_hit = false;
 
-        for (ship, transform) in (&mut ships, &mut locals).join() {
+        for (ship, transform, physical) in (&mut ships, &mut locals, &mut physicals).join() {
+
+            let y = ARENA_HEIGHT / 2.0;
 
             did_hit = match ship.side {
                 Side::Light => {
@@ -40,6 +42,14 @@ impl<'s> System<'s> for WinnerSystem {
                         if let Some(text) = ui_text.get_mut(score_text.dark_text) {
                             text.text = scores.score_dark.to_string();
                         }
+
+                        // Reset Light Ship
+                        transform.set_translation_xyz(ship.width * 3.0, y, 0.0);
+                        physical.velocity = Vector2::new(0.0, 0.0);
+                        physical.rotation = 0.0;
+                        // rotate ships
+                        transform.rotate_2d(1.60);
+
                         true
                     } else {
                         false
@@ -55,7 +65,15 @@ impl<'s> System<'s> for WinnerSystem {
 
                         if let Some(text) = ui_text.get_mut(score_text.light_text) {
                             text.text = scores.score_light.to_string();
-                        }                        
+                        }
+                        
+                        // reset dark ship
+                        transform.set_translation_xyz(ARENA_WIDTH - ship.width * 3.0, y, 0.0);
+                        physical.velocity = Vector2::new(0.0, 0.0);
+                        physical.rotation = 0.0;
+                        // rotate ships
+                        transform.rotate_2d(-1.60);
+
                         true
                     } else {
                         false

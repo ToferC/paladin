@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["ToferC"]
 edition = "2018"
 
+[dependencies]
+rand = "0.7.3"
+
 [dependencies.amethyst]
 version = "0.13.2"
 features = ["vulkan"]

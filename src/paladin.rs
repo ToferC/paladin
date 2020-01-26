@@ -12,18 +12,13 @@ pub const ARENA_WIDTH: f32 = 1600.0;
 
 pub const SHIP_SCALING: f32 = 0.20;
 
-pub const LASER_VELOCITY_X: f32 = 75.0;
-pub const LASER_VELOCITY_Y: f32 = 50.0;
 pub const LASER_RADIUS: f32 = 1.0;
-pub const LASER_MAX_LIFE: f32 = 8.0;
 
 const SHIP_HEIGHT: f32 = 48.0;
 const SHIP_WIDTH: f32 = 48.0;
 
 #[derive(Default)]
-pub struct Paladin {
-    laser_life_timer: Option<f32>,
-}
+pub struct Paladin;
 
 impl SimpleState for Paladin {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -40,12 +35,15 @@ impl SimpleState for Paladin {
         let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
 
         LaserRes::initialise(world);
+        world.insert(RandomGen);
 
         initialize_scoreboard(world);
+        initialize_ship_structures(world);
 
         initialise_ships(world, ship_sheet_handle);
         initialize_force_field(world, force_field_sheet_handle);
         initialise_camera(world);
+
     }
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
@@ -58,7 +56,7 @@ impl SimpleState for Paladin {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Side {
     Light,
     Dark,
@@ -70,7 +68,6 @@ pub struct Ship {
     pub height: f32,
     pub agility: f32,
     pub acceleration: f32,
-    pub velocity: [f32; 2],
     pub laser_velocity: f32,
 }
 
@@ -82,7 +79,6 @@ impl Ship {
             height: SHIP_HEIGHT,
             agility: 0.05,
             acceleration: 0.75,
-            velocity: [0.0, 0.0],
             laser_velocity: 10.0,
         }
     }
@@ -94,6 +90,8 @@ impl Component for Ship {
 
 pub struct Laser {
     pub timer: f32,
+    pub damage: i32,
+    pub side: Side,
 }
 
 impl Component for Laser {
@@ -101,9 +99,11 @@ impl Component for Laser {
 }
 
 impl Laser {
-    pub fn new() -> Laser {
+    pub fn new(timer: f32, damage: i32, side: Side) -> Laser {
         Laser {
-            timer: 6.0,
+            timer,
+            damage,
+            side,
         }
     }
 }
@@ -159,6 +159,55 @@ impl Physical {
     }
 }
 
+/// Combat represents damage, defense and attack in the game
+#[derive(Debug)]
+pub struct Combat {
+    pub structure: i32,
+    pub armour: i32,
+    // lasers
+    pub laser_damage: i32,
+    pub laser_timer: f32,
+    pub laser_velocity: f32,
+    pub missile_damage: i32,
+    pub missile_timer: f32,
+    pub missile_explosion_radius: f32,
+    pub missile_velocity: f32,
+}
+
+impl Component for Combat {
+    type Storage = DenseVecStorage<Self>;
+}
+
+impl Combat {
+    pub fn new(
+        structure: i32,
+        armour: i32, 
+        laser_damage: i32,
+        laser_timer: f32,
+        laser_velocity: f32,
+
+
+        missile_damage: i32,
+        missile_timer: f32,
+        missile_explosion_radius: f32,
+        missile_velocity: f32,
+    ) -> Combat {
+            Combat {
+                structure,
+                armour,
+
+                laser_damage,
+                laser_timer,
+                laser_velocity,
+
+                missile_damage,
+                missile_timer,
+                missile_explosion_radius,
+                missile_velocity,
+            }
+        }
+}
+
 /// Scoreboard contains score data
 #[derive(Default)]
 pub struct ScoreBoard {
@@ -170,6 +219,11 @@ pub struct ScoreBoard {
 pub struct ScoreText {
     pub light_text: Entity,
     pub dark_text: Entity,
+}
+
+pub struct StructureText {
+    pub light_struct_text: Entity,
+    pub dark_struct_text: Entity,
 }
 
 /// helper function to load sprites
@@ -272,6 +326,7 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(Ship::new(Side::Light))
         .with(light_transform)
         .with(Physical::new(48.0, 100.0))
+        .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 
     // Create dark ship entity.
@@ -281,6 +336,7 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
         .with(Ship::new(Side::Dark))
         .with(dark_transform)
         .with(Physical::new(48.0, 100.0))
+        .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 }
 
@@ -326,3 +382,62 @@ fn initialize_scoreboard(world: &mut World) {
     world.insert(ScoreText { light_text, dark_text });
 
 }
+
+fn initialize_ship_structures(world: &mut World) {
+    let font = world.read_resource::<Loader>().load(
+        "font/square.ttf",
+        TtfFormat,
+        (),
+        &world.read_resource(),
+    );
+
+    let light_struct_ui = UiTransform::new(
+        "Light".to_string(), Anchor::BottomLeft, Anchor::BottomLeft,
+        50.0, 50.0, 1.0, 200.0, 50.0,
+    );
+
+    let dark_struct_ui = UiTransform::new(
+        "Dark".to_string(), Anchor::BottomRight, Anchor::BottomRight,
+        -50.0, 50.0, 1.0, 200.0, 50.0,
+    );
+
+
+    let light_struct_text = world
+        .create_entity()
+        .with(light_struct_ui)
+        .with(UiText::new(
+            font.clone(),
+            "150".to_string(),
+            [1.0, 1.0, 1.0, 1.0],
+            50.0,
+        )).build();
+
+        let dark_struct_text = world
+        .create_entity()
+        .with(dark_struct_ui)
+        .with(UiText::new(
+            font.clone(),
+            "150".to_string(),
+            [1.0, 1.0, 1.0, 1.0],
+            50.0,
+        )).build();
+
+    world.insert(StructureText { light_struct_text, dark_struct_text });
+
+}
+
+pub struct RandomGen;
+
+impl RandomGen {
+    // generate a random usize
+    pub fn next_usize(&self) -> usize {
+        use rand::Rng;
+        rand::thread_rng().gen::<usize>()
+    }
+
+    pub fn next_f32(&self) -> f32 {
+        use rand::Rng;
+        rand::thread_rng().gen::<f32>()
+    }
+}
+
