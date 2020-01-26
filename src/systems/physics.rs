@@ -13,10 +13,9 @@ impl<'s> System<'s> for PhysicsSystem {
     type SystemData = (
         WriteStorage<'s, Transform>,
         ReadStorage<'s, Physical>,
-        Read<'s, Time>,
     );
 
-    fn run(&mut self, (mut transforms, physicals, time): Self::SystemData) {
+    fn run(&mut self, (mut transforms, physicals): Self::SystemData) {
         for (transform, physical) in (&mut transforms, &physicals).join() {
 
             transform.prepend_translation_x(physical.velocity[0]);
