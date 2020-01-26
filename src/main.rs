@@ -7,6 +7,7 @@ use crate::paladin::Paladin;
 use amethyst::{
     core::TransformBundle,
     prelude::*,
+    audio::AudioBundle,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
@@ -42,6 +43,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?
         // Add bundle for UI handling
         .with_bundle(UiBundle::<StringBindings>::new())?
+        .with_bundle(AudioBundle::default())?
         // Add systems
         .with(systems::MovementSystem, "movement_system", &["input_system"]
         )

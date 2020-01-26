@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7.3"
+smallvec = "0.6"
 
 [dependencies.amethyst]
 version = "0.13.2"

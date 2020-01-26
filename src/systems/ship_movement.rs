@@ -1,11 +1,17 @@
 use amethyst::core::{Transform, SystemDesc, math};
 use amethyst::core::timing::Time;
-use amethyst::core::math::Vector3;
 use amethyst::derive::SystemDesc;
-use amethyst::ecs::{Join, Read, Entities, Entity, LazyUpdate, ReadStorage, System, SystemData, World, WriteStorage};
+use amethyst::{
+    assets::AssetStorage,
+    audio::{output::Output, Source},
+};
+use amethyst::ecs::{Join, Read, ReadExpect, System, SystemData, World, WriteStorage};
 use amethyst::input::{InputHandler, StringBindings};
 
-use crate::paladin::{Ship, Side, Laser, Physical, ARENA_HEIGHT, ARENA_WIDTH, LASER_RADIUS};
+use crate::paladin::{Ship, Side, Physical};
+use super::audio::{play_thrust_sound, Sounds};
+
+use std::ops::Deref;
 
 #[derive(SystemDesc)]
 pub struct MovementSystem;
@@ -17,11 +23,25 @@ impl<'s> System<'s> for MovementSystem {
         WriteStorage<'s, Ship>,
         Read<'s, InputHandler<StringBindings>>,
         Read<'s, Time>,
-        Read<'s, LazyUpdate>,
+
+        Read<'s, AssetStorage<Source>>,
+        ReadExpect<'s, Sounds>,
+        Option<Read<'s, Output>>,
     );
 
-    fn run(&mut self, (mut transforms, mut physicals, mut ships, input, time, lazy): Self::SystemData) {
+    fn run(&mut self, (
+        mut transforms, 
+        mut physicals, 
+        mut ships, 
+        input, 
+        time, 
 
+        // audio
+        storage,
+        sounds,
+        audio_output,
+     ): Self::SystemData) {
+         
         for (ship, transform, physical) in (&mut ships, &mut transforms, &mut physicals).join() {
 
             let movement = match ship.side {
@@ -40,11 +60,23 @@ impl<'s> System<'s> for MovementSystem {
                 _ => None,
             };
 
+
             if let Some(thrust) = thrust {
-                let added = math::Vector3::y() * ship.acceleration * time.delta_seconds() * thrust;
-                let added = transform.rotation() * added;
-                physical.velocity[0] += added.x;
-                physical.velocity[1] += added.y;
+
+                if thrust != 0.0 {
+                    let added = math::Vector3::y() * ship.acceleration * time.delta_seconds() * thrust;
+                    let added = transform.rotation() * added;
+                    physical.velocity[0] += added.x;
+                    physical.velocity[1] += added.y;
+    
+                    if ship.thrust_timer <= 0.0 {
+                        // play SFX
+                        play_thrust_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
+                        ship.thrust_timer = 2.0;
+                    } else {
+                        ship.thrust_timer -= time.delta_seconds();
+                    }
+                }
 
             }
         }

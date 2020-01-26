@@ -1,12 +1,16 @@
 use amethyst::{
+    assets::AssetStorage,
+    audio::{output::Output, Source},
     core::{Transform, SystemDesc},
-    core::math::{Vector3},
     derive::SystemDesc,
     ui::UiText,
-    ecs::prelude::{Join, ReadStorage, ReadExpect, Entities, System, SystemData, World, Write, WriteStorage},
+    ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, Write, WriteStorage},
 };
 
+use std::ops::Deref;
+
 use crate::paladin::{Laser, Physical, Ship, Side, Combat, RandomGen, StructureText ,LASER_RADIUS};
+use super::audio::{play_impact_sound, Sounds};
 
 #[derive(SystemDesc)]
 pub struct CollisionSystem;
@@ -22,9 +26,27 @@ impl<'s> System<'s> for CollisionSystem {
         ReadExpect<'s, RandomGen>,
         WriteStorage<'s, UiText>,
         ReadExpect<'s, StructureText>,
+
+        Read<'s, AssetStorage<Source>>,
+        ReadExpect<'s, Sounds>,
+        Option<Read<'s, Output>>,
     );
 
-    fn run(&mut self, (entities, lasers, ships, mut transforms, mut physicals, mut combat, random_gen, mut ui_text, struct_text): Self::SystemData) {
+    fn run(&mut self, (
+        entities, 
+        lasers, 
+        ships, 
+        mut transforms, 
+        mut physicals, 
+        mut combat, 
+        random_gen, 
+        mut ui_text, 
+        struct_text,
+
+        storage,
+        sounds,
+        audio_output,
+    ): Self::SystemData) {
         
         // laser collision
         for (laser, entity) in (&lasers, &entities).join() {
@@ -65,18 +87,18 @@ impl<'s> System<'s> for CollisionSystem {
 
                     combat.structure -= damage;
                     println!("Hit for {} damage - {} left!", damage, combat.structure);
+                    play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
 
-                    
                     // Update HP tracker
                     match ship.side {
                         Side::Light => {
                             if let Some(text) = ui_text.get_mut(struct_text.light_struct_text) {
-                                text.text = combat.structure.to_string();
+                                text.text = format!("HP: {}", combat.structure);
                             }
                         }
                         Side::Dark => {
                             if let Some(text) = ui_text.get_mut(struct_text.dark_struct_text) {
-                                text.text = combat.structure.to_string();
+                                text.text = format!("HP: {}", combat.structure);
                             }
                         }
                     }

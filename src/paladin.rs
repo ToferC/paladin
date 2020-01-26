@@ -7,6 +7,8 @@ use amethyst::{
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
 };
 
+use crate::systems::audio::initialize_audio;
+
 pub const ARENA_HEIGHT: f32 = 1024.0;
 pub const ARENA_WIDTH: f32 = 1600.0;
 
@@ -14,8 +16,8 @@ pub const SHIP_SCALING: f32 = 0.20;
 
 pub const LASER_RADIUS: f32 = 1.0;
 
-const SHIP_HEIGHT: f32 = 48.0;
-const SHIP_WIDTH: f32 = 48.0;
+const SHIP_HEIGHT: f32 = 60.8;
+const SHIP_WIDTH: f32 = 73.2;
 
 #[derive(Default)]
 pub struct Paladin;
@@ -29,6 +31,7 @@ impl SimpleState for Paladin {
         // `texture` is the pixel data.
 
         world.register::<Laser>();
+        initialize_audio(world);
 
 
         let ship_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
@@ -69,6 +72,8 @@ pub struct Ship {
     pub agility: f32,
     pub acceleration: f32,
     pub laser_velocity: f32,
+
+    pub thrust_timer: f32,
 }
 
 impl Ship {
@@ -80,6 +85,8 @@ impl Ship {
             agility: 0.05,
             acceleration: 0.75,
             laser_velocity: 10.0,
+
+            thrust_timer: 0.0,
         }
     }
 }
@@ -134,7 +141,7 @@ impl LaserRes {
 }
 
 /// Physical represents the physics system in the game
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Physical {
     pub velocity: math::Vector2<f32>,
     pub max_velocity: f32,
@@ -168,6 +175,13 @@ pub struct Combat {
     pub laser_damage: i32,
     pub laser_timer: f32,
     pub laser_velocity: f32,
+    pub reload_timer: f32,
+    pub time_to_reload: f32,
+    pub burst_rate: i32,
+
+    pub burst_delay: f32,
+    pub burst_timer: f32,
+
     pub missile_damage: i32,
     pub missile_timer: f32,
     pub missile_explosion_radius: f32,
@@ -199,6 +213,12 @@ impl Combat {
                 laser_damage,
                 laser_timer,
                 laser_velocity,
+                reload_timer: 0.0,
+                time_to_reload: 0.2,
+                burst_rate: 8,
+
+                burst_delay: 0.05,
+                burst_timer: 0.0,
 
                 missile_damage,
                 missile_timer,
@@ -407,7 +427,7 @@ fn initialize_ship_structures(world: &mut World) {
         .with(light_struct_ui)
         .with(UiText::new(
             font.clone(),
-            "150".to_string(),
+            "HP: 150".to_string(),
             [1.0, 1.0, 1.0, 1.0],
             50.0,
         )).build();
@@ -417,7 +437,7 @@ fn initialize_ship_structures(world: &mut World) {
         .with(dark_struct_ui)
         .with(UiText::new(
             font.clone(),
-            "150".to_string(),
+            "HP: 150".to_string(),
             [1.0, 1.0, 1.0, 1.0],
             50.0,
         )).build();
