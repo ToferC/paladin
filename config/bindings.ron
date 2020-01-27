@@ -1,6 +1,7 @@
 (
     axes: {
         "rotate": Emulated(pos: Key(D), neg: Key(A)),
+        "drift": Emulated(pos: Key(Q), neg: Key(E)),
         "accelerate": Emulated(pos: Key(W), neg: Key(S)),
     },
     actions: {

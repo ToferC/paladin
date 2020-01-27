@@ -60,6 +60,11 @@ impl<'s> System<'s> for MovementSystem {
                 _ => None,
             };
 
+            let drift = match ship.side {
+                Side::Light => input.axis_value("drift"),
+                _ => None,
+            };
+
 
             if let Some(thrust) = thrust {
 
@@ -77,7 +82,14 @@ impl<'s> System<'s> for MovementSystem {
                         ship.thrust_timer -= time.delta_seconds();
                     }
                 }
+            }
 
+            if let Some(drift) = drift {
+                if drift > 0.0 {
+                    transform.move_left(ship.acceleration * drift);
+                } else if drift < 0.0 {
+                    transform.move_left(ship.acceleration * drift);
+                }
             }
         }
     }
