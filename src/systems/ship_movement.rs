@@ -9,7 +9,7 @@ use amethyst::ecs::{Join, Read, ReadExpect, System, SystemData, World, WriteStor
 use amethyst::input::{InputHandler, StringBindings};
 
 use crate::paladin::{Ship, Side, Physical};
-use super::audio::{play_thrust_sound, Sounds};
+use crate::audio::{play_thrust_sound, Sounds};
 
 use std::ops::Deref;
 

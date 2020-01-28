@@ -4,13 +4,13 @@ use amethyst::{
     core::{Transform, SystemDesc},
     derive::SystemDesc,
     ui::UiText,
-    ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, Write, WriteStorage},
+    ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, WriteStorage},
 };
 
 use std::ops::Deref;
 
 use crate::paladin::{Laser, Physical, Ship, Side, Combat, RandomGen, StructureText ,LASER_RADIUS};
-use super::audio::{play_impact_sound, Sounds};
+use crate::audio::{play_impact_sound, Sounds};
 
 #[derive(SystemDesc)]
 pub struct CollisionSystem;

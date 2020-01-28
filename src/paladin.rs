@@ -7,7 +7,7 @@ use amethyst::{
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
 };
 
-use crate::systems::audio::initialize_audio;
+use crate::audio::{initialize_audio};
 
 pub const ARENA_HEIGHT: f32 = 1024.0;
 pub const ARENA_WIDTH: f32 = 1600.0;

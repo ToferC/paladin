@@ -14,7 +14,7 @@ use std::ops::Deref;
 use smallvec::SmallVec;
 
 use crate::paladin::{Ship, Side, Combat, Laser, LaserRes, Physical};
-use super::audio::{play_laser_sound, Sounds};
+use crate::audio::{play_laser_sound, Sounds};
 
 #[derive(SystemDesc)]
 pub struct LaserSystem;

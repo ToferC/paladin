@@ -19,15 +19,15 @@ const SCORE_SOUND: &str = "audio/score.ogg";
 
 const MUSIC_TRACKS: &[&str] = &[
     "audio/thrust_sequence.ogg",
-    "audio/Raining Bits.ogg",
+    "audio/raining_bits.ogg",
 ];
 
 pub struct Sounds {
     pub laser_sfx: SourceHandle,
     pub thrust_sfx: SourceHandle,
     pub impact_sfx: SourceHandle,
-    pub explosion_sfx: SourceHandle,
-    pub score_sfx: SourceHandle,
+    //pub explosion_sfx: SourceHandle,
+    //pub score_sfx: SourceHandle,
 }
 
 pub struct Music {
@@ -48,8 +48,7 @@ pub fn initialize_audio(world: &mut World) {
 
         sink.set_volume(0.25);
 
-        let music = MUSIC_TRACKS
-            .iter()
+        let music = MUSIC_TRACKS.iter()
             .map(|file| load_audio_track(&loader, &world, file))
             .collect::<Vec<_>>()
             .into_iter()
@@ -61,8 +60,8 @@ pub fn initialize_audio(world: &mut World) {
             laser_sfx: load_audio_track(&loader, &world, LASER_SOUND),
             thrust_sfx: load_audio_track(&loader, &world, THRUST_SOUND),
             impact_sfx: load_audio_track(&loader, &world, IMPACT_SOUND),
-            explosion_sfx: load_audio_track(&loader, &world, EXPLOSION_SOUND),
-            score_sfx: load_audio_track(&loader, &world, SCORE_SOUND),
+            //explosion_sfx: load_audio_track(&loader, &world, EXPLOSION_SOUND),
+            //score_sfx: load_audio_track(&loader, &world, SCORE_SOUND),
         };
 
         (sound, music)
