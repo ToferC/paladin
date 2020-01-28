@@ -16,8 +16,8 @@ pub const SHIP_SCALING: f32 = 0.20;
 
 pub const LASER_RADIUS: f32 = 1.0;
 
-const SHIP_HEIGHT: f32 = 60.8;
-const SHIP_WIDTH: f32 = 73.2;
+const SHIP_HEIGHT: f32 = 73.2;
+const SHIP_WIDTH: f32 = 60.8;
 
 #[derive(Default)]
 pub struct Paladin;
@@ -246,6 +246,7 @@ pub struct StructureText {
     pub dark_struct_text: Entity,
 }
 
+/// reviewing: https://www.reddit.com/r/Amethyst/comments/acburh/amethyst_2d_sprite_animation/
 pub struct SimpleAnimation {
     start_sprite_index: usize,
     frames: usize,

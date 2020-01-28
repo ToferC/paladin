@@ -2,7 +2,7 @@ use amethyst::core::{Transform, SystemDesc};
 use amethyst::derive::SystemDesc;
 use amethyst::ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage};
 
-use crate::paladin::{Physical, ARENA_HEIGHT};
+use crate::paladin::{Physical, ARENA_HEIGHT, ARENA_WIDTH};
 
 #[derive(SystemDesc)]
 pub struct PhysicsSystem;
@@ -38,6 +38,19 @@ impl<'s> System<'s> for PhysicsSystem {
                 transform.translation_mut().y = ARENA_HEIGHT + physical.radius;
             }
 
+            // left edge
+            if (physical_x <= physical.radius && physical.velocity[0] < 0.0)
+            || (physical_x >= ARENA_WIDTH - physical.radius && physical.velocity[0] > 0.0)
+            {
+                transform.translation_mut().x = 0.0 - physical.radius;
+            }
+
+            // right edge
+            if (physical_x >= physical.radius + ARENA_WIDTH && physical.velocity[0] > 0.0)
+            || (physical_x <= physical.radius && physical.velocity[0] < 0.0)
+            {
+                transform.translation_mut().x = ARENA_WIDTH + physical.radius;
+            }
         }
     }
 }

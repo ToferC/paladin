@@ -72,10 +72,10 @@ impl<'s> System<'s> for CollisionSystem {
                 if point_in_rect(
                     laser_x,
                     laser_y,
-                    ship_x - LASER_RADIUS,
-                    ship_y - LASER_RADIUS,
-                    ship_x + ship.width + LASER_RADIUS,
-                    ship_y + ship.height + LASER_RADIUS,
+                    ship_x - LASER_RADIUS, // left
+                    ship_y - LASER_RADIUS, // bottom
+                    ship_x + ship.width + LASER_RADIUS, // right
+                    ship_y + ship.height + LASER_RADIUS, // top
                 ) {
                     println!("Hit!");
 
@@ -106,7 +106,6 @@ impl<'s> System<'s> for CollisionSystem {
                     if combat.structure <= 0 {
                         // explode ship and delete
                         println!("{:?} ship is vaporized!", ship.side);
-                        entities.delete(ship_entity).expect("Unable to delete ship");
                     } else {
                         // adjust & jitter ship vector based on impact
 
