@@ -7,7 +7,7 @@ use crate::paladin::Paladin;
 use amethyst::{
     core::TransformBundle,
     prelude::*,
-    audio::AudioBundle,
+    audio::{AudioBundle, DjSystem},
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
@@ -17,6 +17,8 @@ use amethyst::{
     input::{InputBundle, StringBindings},
     utils::application_root_dir,
 };
+
+use systems::audio::Music;
 
 const BACKGROUND_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
@@ -44,6 +46,11 @@ fn main() -> amethyst::Result<()> {
         // Add bundle for UI handling
         .with_bundle(UiBundle::<StringBindings>::new())?
         .with_bundle(AudioBundle::default())?
+        .with(
+            DjSystem::new(|music: &mut Music| music.music.next()),
+            "dj_system",
+            &[],
+        )
         // Add systems
         .with(systems::MovementSystem, "movement_system", &["input_system"]
         )
