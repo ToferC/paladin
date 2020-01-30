@@ -117,8 +117,76 @@ impl<'s> System<'s> for CollisionSystem {
                     // delete laser
                     entities.delete(entity).expect("Unable to delete laser");
                 }
+            }
+        }
+        // check for ship collisions
+        let mut ships_iter = (&ships, &mut physicals, &mut combat, &mut transforms).join();
+        
+        let (light_ship, mut light_physical, mut light_combat, light_transform) = ships_iter.next().unwrap();
+        let (dark_ship, mut dark_physical, mut dark_combat, dark_transform) = ships_iter.next().unwrap();
 
-                // check for ship collisions
+        if circles_collide(
+            light_transform.translation().x,
+            light_transform.translation().y,
+            light_physical.radius,
+
+            dark_transform.translation().x,
+            dark_transform.translation().y,
+            dark_physical.radius,
+        ) {
+
+            // track impact on light & dark ships
+            let mut light_damage = 30 - light_combat.armour;
+            if light_damage <= 0 {
+                light_damage = 0;
+            };
+
+            light_combat.structure -= light_damage;
+
+            let mut dark_damage = 30 - dark_combat.armour;
+            if dark_damage <= 0 {
+                dark_damage = 0;
+            };
+
+            dark_combat.structure -= dark_damage;
+
+            play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
+
+            // Update HP tracker
+            
+            if let Some(text) = ui_text.get_mut(struct_text.light_struct_text) {
+                text.text = format!("HP: {}", light_combat.structure);
+            }
+            
+            if let Some(text) = ui_text.get_mut(struct_text.dark_struct_text) {
+                text.text = format!("HP: {}", dark_combat.structure);
+            }
+             
+
+            if light_combat.structure <= 0 {
+                // explode ship and delete
+                println!("{:?} ship is vaporized!", light_ship.side);
+            } else {
+                // adjust & jitter ship vector based on impact
+
+                light_transform.rotate_2d(random_gen.next_f32() - 0.5);
+
+                // push ship
+                light_physical.velocity[0] += dark_physical.velocity[0] * 0.05;
+                light_physical.velocity[1] += dark_physical.velocity[1] * 0.05;
+            }
+
+            if dark_combat.structure <= 0 {
+                // explode ship and delete
+                println!("{:?} ship is vaporized!", dark_ship.side);
+            } else {
+                // adjust & jitter ship vector based on impact
+
+                dark_transform.rotate_2d(random_gen.next_f32() - 0.5);
+
+                // push ship
+                dark_physical.velocity[0] += light_physical.velocity[0] * 0.05;
+                dark_physical.velocity[1] += light_physical.velocity[1] * 0.05;
             }
         }
     }
