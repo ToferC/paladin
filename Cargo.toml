@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["ToferC"]
 edition = "2018"
 
+[profile.dev] 
+debug = 0 
+
 [dependencies]
 rand = "0.7.3"
 smallvec = "0.6"

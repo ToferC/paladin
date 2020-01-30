@@ -14,10 +14,7 @@ pub const ARENA_WIDTH: f32 = 1600.0;
 
 pub const SHIP_SCALING: f32 = 0.20;
 
-pub const LASER_RADIUS: f32 = 1.0;
-
-const SHIP_HEIGHT: f32 = 73.2;
-const SHIP_WIDTH: f32 = 60.8;
+pub const LASER_RADIUS: f32 = 4.0;
 
 #[derive(Default)]
 pub struct Paladin;
@@ -34,16 +31,15 @@ impl SimpleState for Paladin {
         initialize_audio(world);
 
 
-        let ship_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
         //let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
 
         LaserRes::initialise(world);
         world.insert(RandomGen);
 
         initialize_scoreboard(world);
-        initialize_ship_structures(world);
+        initialize_ship_hp_ui(world);
 
-        initialise_ships(world, ship_sheet_handle);
+        initialise_ships(world);
         //initialize_force_field(world, force_field_sheet_handle);
         initialise_camera(world);
 
@@ -67,8 +63,6 @@ pub enum Side {
 
 pub struct Ship {
     pub side: Side,
-    pub width: f32,
-    pub height: f32,
     pub agility: f32,
     pub acceleration: f32,
     pub laser_velocity: f32,
@@ -80,8 +74,6 @@ impl Ship {
     fn new(side: Side) -> Ship {
         Ship {
             side,
-            width: SHIP_WIDTH,
-            height: SHIP_HEIGHT,
             agility: 0.05,
             acceleration: 0.75,
             laser_velocity: 10.0,
@@ -343,7 +335,12 @@ fn initialise_camera(world: &mut World) {
 }
 
 /// Initialises one ship on the light, and one ship on the dark.
-fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
+fn initialise_ships(world: &mut World) {
+
+    let light_sprite_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
+    let dark_sprite_sheet_handle = load_sprite_sheet(world, "texture/dark_ship_spritesheet");
+
+
     let mut light_transform = Transform::default();
     let mut dark_transform = Transform::default();
 
@@ -355,34 +352,42 @@ fn initialise_ships(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>)
     light_transform.rotate_2d(1.60);
     dark_transform.rotate_2d(-1.60);
 
+    let phys = Physical::new(43.0, 100.0);
+
     // Correctly position the ships.
     let y = ARENA_HEIGHT / 2.0;
-    light_transform.set_translation_xyz(SHIP_WIDTH * 3.0, y, 0.0);
-    dark_transform.set_translation_xyz(ARENA_WIDTH - SHIP_WIDTH * 3.0, y, 0.0);
+    light_transform.set_translation_xyz(&phys.radius * 4.0, y, 0.0);
+    dark_transform.set_translation_xyz(ARENA_WIDTH - &phys.radius * 4.0, y, 0.0);
 
-    // Assign the sprites for the ships
-    let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle.clone(),
+    // Assign the sprites for the light ship
+    let light_sprite_render = SpriteRender {
+        sprite_sheet: light_sprite_sheet_handle.clone(),
+        sprite_number: 0, // ship is the first sprite in the sprite_sheet
+    };
+
+    // Assign the sprites for the dark ship
+    let dark_sprite_render = SpriteRender {
+        sprite_sheet: dark_sprite_sheet_handle.clone(),
         sprite_number: 0, // ship is the first sprite in the sprite_sheet
     };
 
     // Create a light ship entity.
     world
         .create_entity()
-        .with(sprite_render.clone())
+        .with(light_sprite_render.clone())
         .with(Ship::new(Side::Light))
         .with(light_transform)
-        .with(Physical::new(48.0, 100.0))
+        .with(phys.clone())
         .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 
     // Create dark ship entity.
     world
         .create_entity()
-        .with(sprite_render.clone())
+        .with(dark_sprite_render.clone())
         .with(Ship::new(Side::Dark))
         .with(dark_transform)
-        .with(Physical::new(48.0, 100.0))
+        .with(phys.clone())
         .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 }
@@ -430,7 +435,7 @@ fn initialize_scoreboard(world: &mut World) {
 
 }
 
-fn initialize_ship_structures(world: &mut World) {
+fn initialize_ship_hp_ui(world: &mut World) {
     let font = world.read_resource::<Loader>().load(
         "font/square.ttf",
         TtfFormat,

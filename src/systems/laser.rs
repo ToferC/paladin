@@ -63,7 +63,6 @@ impl<'s> System<'s> for LaserSystem {
 
             if combat.reload_timer <= 0.0 {
                 if shoot {
-                    println!{"PEW PEW"};
 
                     combat.reload_timer = combat.time_to_reload;
     
@@ -122,7 +121,6 @@ impl<'s> System<'s> for LaserSystem {
             if laser.timer <= 0.0 {
                 // time up, remove laser
                 entities.delete(entity).expect("Couldn't delete entity");
-                println!("Laser gone!")
             } else {
                 // update timer
                 laser.timer -= time.delta_seconds();

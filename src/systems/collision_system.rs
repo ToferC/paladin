@@ -2,6 +2,7 @@ use amethyst::{
     assets::AssetStorage,
     audio::{output::Output, Source},
     core::{Transform, SystemDesc},
+    core::math::{distance, Point, Vector2},
     derive::SystemDesc,
     ui::UiText,
     ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, WriteStorage},
@@ -65,20 +66,19 @@ impl<'s> System<'s> for CollisionSystem {
                 phys.velocity.clone()
             };
 
-            for (ship_entity, ship, ship_transform, combat, physical) in (&entities, &ships, &mut transforms, &mut combat, &mut physicals).join() {
+            for (ship, ship_transform, combat, physical) in (&ships, &mut transforms, &mut combat, &mut physicals).join() {
                 let ship_x = ship_transform.translation().x;
                 let ship_y = ship_transform.translation().y;
 
-                if point_in_rect(
+                if circles_collide(
                     laser_x,
                     laser_y,
-                    ship_x - LASER_RADIUS, // left
-                    ship_y - LASER_RADIUS, // bottom
-                    ship_x + ship.width + LASER_RADIUS, // right
-                    ship_y + ship.height + LASER_RADIUS, // top
-                ) {
-                    println!("Hit!");
+                    LASER_RADIUS,
 
+                    ship_x,
+                    ship_y,
+                    physical.radius,
+                ) {
                     // damage ship hit
                     let mut damage = laser.damage - combat.armour;
                     if damage <= 0 {
@@ -86,7 +86,6 @@ impl<'s> System<'s> for CollisionSystem {
                     };
 
                     combat.structure -= damage;
-                    println!("Hit for {} damage - {} left!", damage, combat.structure);
                     play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
 
                     // Update HP tracker
@@ -117,8 +116,9 @@ impl<'s> System<'s> for CollisionSystem {
                     }
                     // delete laser
                     entities.delete(entity).expect("Unable to delete laser");
-                    println!("Laser expended");
                 }
+
+                // check for ship collisions
             }
         }
     }
@@ -126,4 +126,18 @@ impl<'s> System<'s> for CollisionSystem {
 
 fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
     x >= left && x <= right && y>= bottom && y <= top
+}
+
+fn circles_collide(a_x: f32, a_y: f32, a_r: f32, b_x: f32, b_y: f32, b_r: f32) -> bool {
+
+    let dx = a_x - b_x;
+    let dy = a_y - b_y;
+
+    let distance = dx * dx + dy * dy;
+
+    if distance > (a_r * a_r) + (b_r * b_r) {
+        false
+    } else {
+        true
+    }
 }

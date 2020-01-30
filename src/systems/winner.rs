@@ -74,7 +74,7 @@ impl<'s> System<'s> for WinnerSystem {
                 for (ship, transform, physical, combat) in (&ships, &mut locals, &mut physicals, &mut combats).join() {
                     match ship.side {
                         Side::Light => {
-                            transform.set_translation_xyz(ship.width * 3.0, y, 0.0);
+                            transform.set_translation_xyz(physical.radius * 4.0, y, 0.0);
                             physical.velocity = Vector2::new(0.0, 0.0);
                             physical.rotation = 0.0;
                             // rotate ships
@@ -82,7 +82,7 @@ impl<'s> System<'s> for WinnerSystem {
                             combat.structure = 150;
                         }
                         Side::Dark => {
-                            transform.set_translation_xyz(ARENA_WIDTH - ship.width * 3.0, y, 0.0);
+                            transform.set_translation_xyz(ARENA_WIDTH - physical.radius * 4.0, y, 0.0);
                             physical.velocity = Vector2::new(0.0, 0.0);
                             physical.rotation = 0.0;
                             // rotate ships
