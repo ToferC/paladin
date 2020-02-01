@@ -7,7 +7,7 @@ use amethyst::{
     ecs::prelude::{Join, System, SystemData, World, Write, WriteStorage, ReadStorage, ReadExpect, Entities},
 };
 
-use crate::paladin::{Ship, Physical, Combat, Side, ScoreBoard, ScoreText, ARENA_WIDTH, ARENA_HEIGHT};
+use crate::paladin::{Ship, Physical, Combat, Side, ScoreBoard, ScoreText, StructureText, ARENA_WIDTH, ARENA_HEIGHT};
 
 #[derive(SystemDesc)]
 pub struct WinnerSystem;
@@ -19,12 +19,15 @@ impl<'s> System<'s> for WinnerSystem {
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Physical>,
         WriteStorage<'s, Combat>,
+
         WriteStorage<'s, UiText>,
+        ReadExpect<'s, StructureText>,
+
         Write<'s, ScoreBoard>,
         ReadExpect<'s, ScoreText>,
     );
 
-    fn run(&mut self, (entities, ships, mut locals, mut physicals, mut combats, mut ui_text, mut scores, score_text): Self::SystemData) {
+    fn run(&mut self, (entities, ships, mut locals, mut physicals, mut combats, mut ui_text, struct_text, mut scores, score_text): Self::SystemData) {
 
         let mut is_destroyed: bool;
 
@@ -95,6 +98,22 @@ impl<'s> System<'s> for WinnerSystem {
                     "Score: | {:^3} | {:^3} |",
                     scores.score_light, scores.score_dark
                 );
+            }
+
+            // Update HP tracker
+            match ship.side {
+                Side::Light => {
+                    let combat = combats.get(entity).unwrap();
+                    if let Some(text) = ui_text.get_mut(struct_text.light_struct_text) {
+                        text.text = format!("HP: {}", combat.structure);
+                    }
+                }
+                Side::Dark => {
+                    let combat = combats.get(entity).unwrap();
+                    if let Some(text) = ui_text.get_mut(struct_text.dark_struct_text) {
+                        text.text = format!("HP: {}", combat.structure);
+                    }
+                }
             }
         }
     }

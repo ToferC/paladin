@@ -25,8 +25,6 @@ impl<'s> System<'s> for CollisionSystem {
         WriteStorage<'s, Physical>,
         WriteStorage<'s, Combat>,
         ReadExpect<'s, RandomGen>,
-        WriteStorage<'s, UiText>,
-        ReadExpect<'s, StructureText>,
 
         Read<'s, AssetStorage<Source>>,
         ReadExpect<'s, Sounds>,
@@ -41,8 +39,6 @@ impl<'s> System<'s> for CollisionSystem {
         mut physicals, 
         mut combat, 
         random_gen, 
-        mut ui_text, 
-        struct_text,
 
         storage,
         sounds,
@@ -87,20 +83,6 @@ impl<'s> System<'s> for CollisionSystem {
 
                     combat.structure -= damage;
                     play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
-
-                    // Update HP tracker
-                    match ship.side {
-                        Side::Light => {
-                            if let Some(text) = ui_text.get_mut(struct_text.light_struct_text) {
-                                text.text = format!("HP: {}", combat.structure);
-                            }
-                        }
-                        Side::Dark => {
-                            if let Some(text) = ui_text.get_mut(struct_text.dark_struct_text) {
-                                text.text = format!("HP: {}", combat.structure);
-                            }
-                        }
-                    }
 
                     if combat.structure <= 0 {
                         // explode ship and delete
@@ -151,18 +133,7 @@ impl<'s> System<'s> for CollisionSystem {
             dark_combat.structure -= dark_damage;
 
             play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
-
-            // Update HP tracker
-            
-            if let Some(text) = ui_text.get_mut(struct_text.light_struct_text) {
-                text.text = format!("HP: {}", light_combat.structure);
-            }
-            
-            if let Some(text) = ui_text.get_mut(struct_text.dark_struct_text) {
-                text.text = format!("HP: {}", dark_combat.structure);
-            }
              
-
             if light_combat.structure <= 0 {
                 // explode ship and delete
                 println!("{:?} ship is vaporized!", light_ship.side);
@@ -171,9 +142,12 @@ impl<'s> System<'s> for CollisionSystem {
 
                 light_transform.rotate_2d(random_gen.next_f32() - 0.5);
 
-                // push ship
-                light_physical.velocity[0] += dark_physical.velocity[0] * 0.05;
-                light_physical.velocity[1] += dark_physical.velocity[1] * 0.05;
+
+                light_physical.velocity[0] = -light_physical.velocity[0];
+                light_physical.velocity[1] = -light_physical.velocity[1];
+
+               
+
             }
 
             if dark_combat.structure <= 0 {
@@ -184,9 +158,9 @@ impl<'s> System<'s> for CollisionSystem {
 
                 dark_transform.rotate_2d(random_gen.next_f32() - 0.5);
 
-                // push ship
-                dark_physical.velocity[0] += light_physical.velocity[0] * 0.05;
-                dark_physical.velocity[1] += light_physical.velocity[1] * 0.05;
+                dark_physical.velocity[0] = -dark_physical.velocity[0];
+                dark_physical.velocity[1] = -dark_physical.velocity[1];
+
             }
         }
     }

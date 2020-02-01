@@ -50,7 +50,7 @@ impl<'s> System<'s> for MovementSystem {
             };
             if let Some(mv_amount) = movement {
                 if mv_amount != 0.0 {
-                    let scaled_amount = ship.agility * mv_amount as f32;
+                    let scaled_amount = physical.agility * mv_amount as f32;
                     transform.rotate_2d(scaled_amount);
                 }
             }
@@ -69,7 +69,7 @@ impl<'s> System<'s> for MovementSystem {
             if let Some(thrust) = thrust {
 
                 if thrust != 0.0 {
-                    let added = math::Vector3::y() * ship.acceleration * time.delta_seconds() * thrust;
+                    let added = math::Vector3::y() * physical.acceleration * time.delta_seconds() * thrust;
                     let added = transform.rotation() * added;
                     physical.velocity[0] += added.x;
                     physical.velocity[1] += added.y;
@@ -86,9 +86,9 @@ impl<'s> System<'s> for MovementSystem {
 
             if let Some(drift) = drift {
                 if drift > 0.0 {
-                    transform.move_left(ship.acceleration * drift);
+                    transform.move_left(physical.acceleration * drift);
                 } else if drift < 0.0 {
-                    transform.move_left(ship.acceleration * drift);
+                    transform.move_left(physical.acceleration * drift);
                 }
             }
         }

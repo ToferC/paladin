@@ -74,7 +74,7 @@ impl<'s> System<'s> for LaserSystem {
     
                     laser_t.set_scale(Vector3::new(4.0, 4.0, 0.0));
 
-                    let mut physical = Physical::new(8.0, 4.0);
+                    let mut physical = Physical::new(8., 4., 0., 0.);
                     physical.velocity = Vector2::new(velocity.x, velocity.y);
                     
                     // set timer here for burst fire
