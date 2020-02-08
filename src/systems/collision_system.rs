@@ -5,12 +5,13 @@ use amethyst::{
     core::math::{distance, Point, Vector2},
     derive::SystemDesc,
     ui::UiText,
-    ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, WriteStorage},
+    ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, WriteStorage, LazyUpdate},
 };
 
 use std::ops::Deref;
 
-use crate::paladin::{Laser, Physical, Ship, Side, Combat, RandomGen, StructureText ,LASER_RADIUS};
+use crate::paladin::{Laser, Physical, Ship, Side, Combat, RandomGen, StructureText ,LASER_RADIUS, show_explosion};
+use crate::resources::explosion::{ExplosionRes};
 use crate::audio::{play_impact_sound, Sounds};
 
 #[derive(SystemDesc)]
@@ -29,6 +30,8 @@ impl<'s> System<'s> for CollisionSystem {
         Read<'s, AssetStorage<Source>>,
         ReadExpect<'s, Sounds>,
         Option<Read<'s, Output>>,
+        ReadExpect<'s, LazyUpdate>,
+        ReadExpect<'s, ExplosionRes>,
     );
 
     fn run(&mut self, (
@@ -43,6 +46,8 @@ impl<'s> System<'s> for CollisionSystem {
         storage,
         sounds,
         audio_output,
+        lazy_update,
+        explosion_res,
     ): Self::SystemData) {
         
         // laser collision
@@ -83,6 +88,14 @@ impl<'s> System<'s> for CollisionSystem {
 
                     combat.structure -= damage;
                     play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
+
+                    show_explosion(
+                        &entities,
+                        explosion_res.animation_render(),
+                        laser_x,
+                        laser_y,
+                        &lazy_update,
+                    );
 
                     if combat.structure <= 0 {
                         // explode ship and delete

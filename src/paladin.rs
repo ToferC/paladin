@@ -1,13 +1,22 @@
 use amethyst::{
-    assets::{AssetStorage, Handle, Loader},
+    animation::AnimationSetPrefab,
+    assets::{AssetStorage, Handle, Loader, Prefab, PrefabData, PrefabLoader, RonFormat, ProgressCounter},
+    derive::PrefabData,
+    error::Error,
     core::{transform::Transform, math},
-    ecs::prelude::{Component, DenseVecStorage, Entity},
+    ecs::prelude::{Component, DenseVecStorage, Entity, Entities, LazyUpdate, NullStorage, ReadExpect},
     prelude::*,
     ui::{Anchor, TtfFormat, UiText, UiTransform},
-    renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
+    renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
+        sprite::{prefab::SpriteScenePrefab},
+    },
+    renderer::transparent::Transparent,
 };
 
+use serde::{Serialize, Deserialize};
+
 use crate::audio::{initialize_audio};
+use crate::resources::explosion::*;
 
 pub const ARENA_HEIGHT: f32 = 1024.0;
 pub const ARENA_WIDTH: f32 = 1600.0;
@@ -21,6 +30,9 @@ pub struct Paladin;
 
 impl SimpleState for Paladin {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+
+        let mut progress_counter = ProgressCounter::new();
+
         let world = data.world;
 
         // Load the spritesheet necessary to render the graphics.
@@ -28,12 +40,14 @@ impl SimpleState for Paladin {
         // `texture` is the pixel data.
 
         world.register::<Laser>();
+
         initialize_audio(world);
 
 
         //let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
 
         LaserRes::initialise(world);
+        ExplosionRes::initialise(world, &mut progress_counter);
         world.insert(RandomGen);
 
         initialize_scoreboard(world);
@@ -42,6 +56,8 @@ impl SimpleState for Paladin {
         initialise_ships(world);
         //initialize_force_field(world, force_field_sheet_handle);
         initialise_camera(world);
+
+
 
     }
 
@@ -235,30 +251,69 @@ pub struct StructureText {
     pub dark_struct_text: Entity,
 }
 
-/// reviewing: https://www.reddit.com/r/Amethyst/comments/acburh/amethyst_2d_sprite_animation/
-pub struct SimpleAnimation {
-    start_sprite_index: usize,
-    frames: usize,
-    current_frame: usize,
-    time_per_frame: f32,
-    elapsed_time: f32,
-    active: bool,
+/// Animation
+#[derive(Eq, PartialOrd, PartialEq, Hash, Debug, Copy, Clone, Deserialize, Serialize)]
+pub enum AnimationId {
+    Explosion,
 }
 
-impl SimpleAnimation {
-    pub fn new(start_sprite_index: usize, frames: usize, time_per_frame: f32,) -> SimpleAnimation {
-        SimpleAnimation {
-            start_sprite_index,
-            frames,
-            current_frame: 0,
-            time_per_frame,
-            elapsed_time: 0.0,
-            active: true,
+#[derive(Default)]
+pub struct Explosion;
+
+impl Component for Explosion {
+    type Storage = NullStorage<Self>;
+}
+
+pub fn show_explosion(
+    entities: &Entities,
+    prefab_handle: Handle<Prefab<AnimationPrefabData>>,
+    transform_x: f32,
+    transform_y: f32,
+    lazy_update: &ReadExpect<LazyUpdate>,
+) {
+    let explosion_entity: Entity = entities.create();
+
+    let scale: f32 = 1.0;
+
+    let mut transform = Transform::default();
+    transform.set_scale(math::Vector3::new(scale, scale, scale));
+    transform.set_translation_xyz(transform_x, scale.mul_add(32. - 15., transform_y), 0.);
+
+    lazy_update.insert(explosion_entity, Explosion::default());
+    lazy_update.insert(
+        explosion_entity,
+        Animation::new(AnimationId::Explosion, vec![AnimationId::Explosion]),
+    );
+    lazy_update.insert(explosion_entity, prefab_handle);
+    lazy_update.insert(explosion_entity, transform);
+    lazy_update.insert(explosion_entity, Transparent);
+}
+
+#[derive(Clone, Debug, Deserialize, PrefabData)]
+pub struct AnimationPrefabData {
+    sprite_scene: SpriteScenePrefab,
+    animation_set: AnimationSetPrefab<AnimationId, SpriteRender>,
+}
+
+/// https://github.com/amethyst/space-menace/blob/master/src/components/animation.rs
+#[derive(Debug)]
+pub struct Animation {
+   pub current: AnimationId,
+   pub types: Vec<AnimationId>,
+   pub show: bool,
+}
+
+impl Animation {
+    pub fn new(current: AnimationId, types: Vec<AnimationId>) -> Self {
+        Self {
+            current,
+            types,
+            show: true,
         }
     }
 }
 
-impl Component for SimpleAnimation {
+impl Component for Animation {
     type Storage = DenseVecStorage<Self>;
 }
 

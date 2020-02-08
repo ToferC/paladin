@@ -3,9 +3,14 @@
 mod paladin;
 mod systems;
 mod audio;
+mod resources;
+
+extern crate specs_derive;
 
 use crate::paladin::Paladin;
 use amethyst::{
+    animation::AnimationBundle,
+    assets::{PrefabLoaderSystem, PrefabLoaderSystemDesc},
     core::TransformBundle,
     prelude::*,
     audio::{AudioBundle, DjSystemDesc},
@@ -13,6 +18,7 @@ use amethyst::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
         RenderingBundle,
+        sprite::SpriteRender,
     },
     ui::{RenderUi, UiBundle},
     input::{InputBundle, StringBindings},
@@ -20,6 +26,7 @@ use amethyst::{
 };
 
 use audio::Music;
+use paladin::{AnimationPrefabData, AnimationId};
 
 const BACKGROUND_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
@@ -40,8 +47,21 @@ fn main() -> amethyst::Result<()> {
     let assets_dir = app_root.join("assets");
 
     let game_data = GameDataBuilder::default()
+        // Prefabbundle
+        .with_system_desc(
+            PrefabLoaderSystemDesc::<AnimationPrefabData>::default(),
+            "scene_loader",
+            &[],
+            )
+        // Animation
+        .with_bundle(AnimationBundle::<AnimationId, SpriteRender>::new(
+            "sprite_animation_control",
+            "sprite_sampler_interpolation",
+        ))?
         // Add the transform bundle which handles tracking entity positions
-        .with_bundle(TransformBundle::new())?
+        .with_bundle(TransformBundle::new()
+            .with_dep(&["sprite_animation_control", "sprite_sampler_interpolation"]),
+        )?
         // Add input bundle
         .with_bundle(input_bundle)?
         // Add bundle for UI handling

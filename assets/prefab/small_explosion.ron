@@ -1,0 +1,84 @@
+#![enable(implicit_some)]
+Prefab(
+    entities: [
+        // BulletImpact
+        PrefabEntity(
+            data: AnimationPrefabData(
+                // SpriteScenePrefab
+                sprite_scene: (
+                    // SpriteSheetPrefab with index 0
+                    sheet: Sheet(
+                        // TexturePrefab
+                        texture: File("texture/small_explosion.png", (
+                            "IMAGE", (
+                                sampler_info: (
+                                    min_filter: Nearest,
+                                    mag_filter: Nearest,
+                                    mip_filter: Nearest,
+                                    wrap_mode: (Tile, Tile, Tile),
+                                    lod_bias: (0),
+                                    lod_range: (
+                                        start: ( 0 ),
+                                        end: ( 8000 ),
+                                    ),
+                                    comparison: None,
+                                    border: (0),
+                                    anisotropic: Off,
+                                ),
+                            ),
+                        )),
+                        sprites: [
+                            List((
+                                texture_width: 512,
+                                texture_height: 64,
+                                sprites: [
+                                    (x: 0, y: 0, width: 64, height: 64), // 1
+                                    (x: 64, y: 0, width: 64, height: 64), // 2
+                                    (x: 128, y: 0, width: 64, height: 64), // 3
+                                    (x: 192, y: 0, width: 64, height: 64), // 4
+                                    (x: 256, y: 0, width: 64, height: 64), // 5
+                                    (x: 320, y: 0, width: 64, height: 64), // 6
+                                    (x: 384, y: 0, width: 64, height: 64), // 7
+                                    (x: 448, y: 0, width: 64, height: 64), // 8
+                                ],
+                            )),
+                        ],
+                        // optional
+                        name: "small_explosion",
+                    ),
+                    // SpriteRenderPrefab
+                    render: (
+                        sheet: "small_explosion",
+                        sprite_number: 0,
+                    ),
+                ),
+                // AnimationSetPrefab
+                animation_set: (
+                    animations: [
+                        (
+                            // AnimationId
+                            Explosion,
+                            (
+                                samplers: [
+                                    (
+                                        0,
+                                        // Only SpriteIndex channel allowed for SpriteRender in AnimationSetPrefab
+                                        SpriteIndex,
+                                        (
+                                            // Time of key frames
+                                            input: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
+                                            // Sprite indexes from SpriteSheet for key frames
+                                            output: [0, 1, 2, 3, 4, 5, 6, 7],
+                                            // Sprites can only ever be animated with Step
+                                            function: Step,
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+        ),
+    ],
+)
