@@ -1,11 +1,10 @@
 use amethyst::{
-    assets::{AssetStorage, Handle, Loader, ProgressCounter},
-    core::{transform::Transform, math},
+    assets::{Loader, ProgressCounter},
+    core::{transform::Transform},
     ecs::prelude::{Entity},
     prelude::*,
     ui::{Anchor, TtfFormat, UiText, UiTransform},
-    renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
-    },
+    renderer::Camera,
 };
 
 use crate::audio::{initialize_audio};
@@ -43,8 +42,6 @@ impl SimpleState for Paladin {
             ],
         ));
 
-        //let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
-
         LaserRes::initialise(world);
         world.insert(RandomGen);
 
@@ -52,7 +49,6 @@ impl SimpleState for Paladin {
         initialize_ship_hp_ui(world);
 
         initialise_ships(world);
-        //initialize_force_field(world, force_field_sheet_handle);
         initialise_camera(world);
     }
 
@@ -82,40 +78,6 @@ pub struct ScoreText {
 pub struct StructureText {
     pub light_struct_text: Entity,
     pub dark_struct_text: Entity,
-}
-
-/// Initialize force field
-fn initialize_force_field(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
-    let mut light_transform = Transform::default();
-    let mut dark_transform = Transform::default();
-
-    // rescale fields
-    light_transform.set_scale(math::Vector3::new(1024.0 / ARENA_WIDTH * 0.05, 1.0, 0.0));
-    dark_transform.set_scale(math::Vector3::new(1024.0 / ARENA_WIDTH * 0.05, 1.0, 0.0));
-
-    // Correctly position the fields.
-    light_transform.set_translation_xyz(0.0, ARENA_HEIGHT / 2.0, 0.0);
-    dark_transform.set_translation_xyz(ARENA_WIDTH, ARENA_HEIGHT / 2.0, 0.0);
-
-    // Assign the sprites for the ships
-    let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle.clone(),
-        sprite_number: 0, // ship is the first sprite in the sprite_sheet
-    };
-
-    // Create a light ship entity.
-    world
-        .create_entity()
-        .with(sprite_render.clone())
-        .with(light_transform)
-        .build();
-
-    // Create dark ship entity.
-    world
-        .create_entity()
-        .with(sprite_render.clone())
-        .with(dark_transform)
-        .build();
 }
 
 /// Initialise the camera.

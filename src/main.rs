@@ -10,7 +10,7 @@ extern crate specs_derive;
 
 use amethyst::{
     animation::AnimationBundle,
-    assets::{PrefabLoaderSystem, PrefabLoaderSystemDesc},
+    assets::{PrefabLoaderSystemDesc},
     core::TransformBundle,
     prelude::*,
     audio::{AudioBundle, DjSystemDesc},

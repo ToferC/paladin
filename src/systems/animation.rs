@@ -5,7 +5,7 @@ use amethyst::{
     renderer::{
         sprite::SpriteRender,
     },
-    ecs::{WriteStorage, Read, ReadStorage, Entities, System, Join},
+    ecs::{WriteStorage, ReadStorage, Entities, System, Join},
 };
 
 use crate::components::{LaserImpact, Animation, AnimationId};
