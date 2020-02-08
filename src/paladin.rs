@@ -1,27 +1,20 @@
 use amethyst::{
-    animation::AnimationSetPrefab,
-    assets::{AssetStorage, Handle, Loader, Prefab, PrefabData, PrefabLoader, RonFormat, ProgressCounter},
-    derive::PrefabData,
-    error::Error,
+    assets::{AssetStorage, Handle, Loader, ProgressCounter},
     core::{transform::Transform, math},
-    ecs::prelude::{Component, DenseVecStorage, Entity, Entities, LazyUpdate, NullStorage, ReadExpect},
+    ecs::prelude::{Entity},
     prelude::*,
     ui::{Anchor, TtfFormat, UiText, UiTransform},
     renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture,
-        sprite::{prefab::SpriteScenePrefab},
     },
-    renderer::transparent::Transparent,
 };
 
-use serde::{Serialize, Deserialize};
-
 use crate::audio::{initialize_audio};
-use crate::resources::explosion::*;
+use crate::resources::assets::*;
+
+use crate::components::{LaserRes, Laser, initialise_ships};
 
 pub const ARENA_HEIGHT: f32 = 1024.0;
 pub const ARENA_WIDTH: f32 = 1600.0;
-
-pub const SHIP_SCALING: f32 = 0.20;
 
 pub const LASER_RADIUS: f32 = 4.0;
 
@@ -43,11 +36,16 @@ impl SimpleState for Paladin {
 
         initialize_audio(world);
 
+        let _progress_counter = Some(load_assets(
+            world,
+            vec![
+                AssetType::LaserImpact,
+            ],
+        ));
 
         //let force_field_sheet_handle = load_sprite_sheet(world, "texture/force_field");
 
         LaserRes::initialise(world);
-        ExplosionRes::initialise(world, &mut progress_counter);
         world.insert(RandomGen);
 
         initialize_scoreboard(world);
@@ -56,9 +54,6 @@ impl SimpleState for Paladin {
         initialise_ships(world);
         //initialize_force_field(world, force_field_sheet_handle);
         initialise_camera(world);
-
-
-
     }
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
@@ -69,168 +64,6 @@ impl SimpleState for Paladin {
 
         Trans::None
     }
-}
-
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
-pub enum Side {
-    Light,
-    Dark,
-}
-
-pub struct Ship {
-    pub side: Side,
-
-    pub thrust_timer: f32,
-}
-
-impl Ship {
-    fn new(side: Side) -> Ship {
-        Ship {
-            side,
-            thrust_timer: 0.0,
-        }
-    }
-}
-
-impl Component for Ship {
-    type Storage = DenseVecStorage<Self>;
-}
-
-pub struct Laser {
-    pub timer: f32,
-    pub damage: i32,
-    pub side: Side,
-}
-
-impl Component for Laser {
-    type Storage = DenseVecStorage<Self>;
-}
-
-impl Laser {
-    pub fn new(timer: f32, damage: i32, side: Side) -> Laser {
-        Laser {
-            timer,
-            damage,
-            side,
-        }
-    }
-}
-
-pub struct LaserRes {
-    pub sprite_render: SpriteRender
-}
-
-impl Component for LaserRes {
-    type Storage = DenseVecStorage<Self>;
-}
-
-impl LaserRes {
-    pub fn initialise(world: &mut World) {
-        let sprite_sheet_handle = load_sprite_sheet(world, "texture/bullet");
-
-        let sprite_render = SpriteRender {
-            sprite_sheet: sprite_sheet_handle,
-            sprite_number: 0,
-        };
-
-        world.insert(LaserRes { sprite_render });
-    }
-
-    pub fn sprite_render(&self) -> SpriteRender {
-        self.sprite_render.clone()
-    }
-}
-
-/// Physical represents the physics system in the game
-#[derive(Debug, Clone, Copy)]
-pub struct Physical {
-    pub acceleration: f32,
-    pub agility: f32,
-    pub velocity: math::Vector2<f32>,
-    pub max_velocity: f32,
-    pub rotation: f32,
-    pub radius: f32,
-    pub mass: f32,
-}
-
-impl Component for Physical {
-    type Storage = DenseVecStorage<Self>;
-}
-
-impl Physical {
-    pub fn new(radius: f32, mass: f32, acceleration: f32, agility: f32) -> Physical {
-        Physical {
-            velocity: math::Vector2::new(0.0, 0.0),
-            acceleration: acceleration,
-            agility: agility,
-            max_velocity: 110.0,
-            rotation: 0.0,
-            radius: radius,
-            mass: mass,
-        }
-    }
-}
-
-/// Combat represents damage, defense and attack in the game
-#[derive(Debug)]
-pub struct Combat {
-    pub structure: i32,
-    pub armour: i32,
-    // lasers
-    pub laser_damage: i32,
-    pub laser_timer: f32,
-    pub laser_velocity: f32,
-    pub reload_timer: f32,
-    pub time_to_reload: f32,
-    pub burst_rate: i32,
-
-    pub burst_delay: f32,
-    pub burst_timer: f32,
-
-    pub missile_damage: i32,
-    pub missile_timer: f32,
-    pub missile_explosion_radius: f32,
-    pub missile_velocity: f32,
-}
-
-impl Component for Combat {
-    type Storage = DenseVecStorage<Self>;
-}
-
-impl Combat {
-    pub fn new(
-        structure: i32,
-        armour: i32, 
-        laser_damage: i32,
-        laser_timer: f32,
-        laser_velocity: f32,
-
-
-        missile_damage: i32,
-        missile_timer: f32,
-        missile_explosion_radius: f32,
-        missile_velocity: f32,
-    ) -> Combat {
-            Combat {
-                structure,
-                armour,
-
-                laser_damage,
-                laser_timer,
-                laser_velocity,
-                reload_timer: 0.0,
-                time_to_reload: 0.2,
-                burst_rate: 8,
-
-                burst_delay: 0.05,
-                burst_timer: 0.0,
-
-                missile_damage,
-                missile_timer,
-                missile_explosion_radius,
-                missile_velocity,
-            }
-        }
 }
 
 /// Scoreboard contains score data
@@ -249,94 +82,6 @@ pub struct ScoreText {
 pub struct StructureText {
     pub light_struct_text: Entity,
     pub dark_struct_text: Entity,
-}
-
-/// Animation
-#[derive(Eq, PartialOrd, PartialEq, Hash, Debug, Copy, Clone, Deserialize, Serialize)]
-pub enum AnimationId {
-    Explosion,
-}
-
-#[derive(Default)]
-pub struct Explosion;
-
-impl Component for Explosion {
-    type Storage = NullStorage<Self>;
-}
-
-pub fn show_explosion(
-    entities: &Entities,
-    prefab_handle: Handle<Prefab<AnimationPrefabData>>,
-    transform_x: f32,
-    transform_y: f32,
-    lazy_update: &ReadExpect<LazyUpdate>,
-) {
-    let explosion_entity: Entity = entities.create();
-
-    let scale: f32 = 1.0;
-
-    let mut transform = Transform::default();
-    transform.set_scale(math::Vector3::new(scale, scale, scale));
-    transform.set_translation_xyz(transform_x, scale.mul_add(32. - 15., transform_y), 0.);
-
-    lazy_update.insert(explosion_entity, Explosion::default());
-    lazy_update.insert(
-        explosion_entity,
-        Animation::new(AnimationId::Explosion, vec![AnimationId::Explosion]),
-    );
-    lazy_update.insert(explosion_entity, prefab_handle);
-    lazy_update.insert(explosion_entity, transform);
-    lazy_update.insert(explosion_entity, Transparent);
-}
-
-#[derive(Clone, Debug, Deserialize, PrefabData)]
-pub struct AnimationPrefabData {
-    sprite_scene: SpriteScenePrefab,
-    animation_set: AnimationSetPrefab<AnimationId, SpriteRender>,
-}
-
-/// https://github.com/amethyst/space-menace/blob/master/src/components/animation.rs
-#[derive(Debug)]
-pub struct Animation {
-   pub current: AnimationId,
-   pub types: Vec<AnimationId>,
-   pub show: bool,
-}
-
-impl Animation {
-    pub fn new(current: AnimationId, types: Vec<AnimationId>) -> Self {
-        Self {
-            current,
-            types,
-            show: true,
-        }
-    }
-}
-
-impl Component for Animation {
-    type Storage = DenseVecStorage<Self>;
-}
-
-/// helper function to load sprites
-fn load_sprite_sheet(world: &mut World, path: &str) -> Handle<SpriteSheet> {
-    let texture_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load(
-            format!("{}.png", path),
-            ImageFormat::default(),
-            (),
-            &texture_storage,
-        )
-    };
-    let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-    loader.load(
-        format!("{}.ron", path),
-        SpriteSheetFormat(texture_handle),
-        (),
-        &sprite_sheet_store,
-    )
 }
 
 /// Initialize force field
@@ -383,64 +128,6 @@ fn initialise_camera(world: &mut World) {
         .create_entity()
         .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
         .with(transform)
-        .build();
-}
-
-/// Initialises one ship on the light, and one ship on the dark.
-fn initialise_ships(world: &mut World) {
-
-    let light_sprite_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
-    let dark_sprite_sheet_handle = load_sprite_sheet(world, "texture/dark_ship_spritesheet");
-
-
-    let mut light_transform = Transform::default();
-    let mut dark_transform = Transform::default();
-
-    // rescale ships
-    light_transform.set_scale(math::Vector3::new(SHIP_SCALING, SHIP_SCALING, SHIP_SCALING));
-    dark_transform.set_scale(math::Vector3::new(SHIP_SCALING, SHIP_SCALING, SHIP_SCALING));
-
-    // rotate ships
-    light_transform.rotate_2d(1.60);
-    dark_transform.rotate_2d(-1.60);
-
-    let phys = Physical::new(43.0, 100.0, 1.25, 0.05);
-
-    // Correctly position the ships.
-    let y = ARENA_HEIGHT / 2.0;
-    light_transform.set_translation_xyz(&phys.radius * 4.0, y, 0.0);
-    dark_transform.set_translation_xyz(ARENA_WIDTH - &phys.radius * 4.0, y, 0.0);
-
-    // Assign the sprites for the light ship
-    let light_sprite_render = SpriteRender {
-        sprite_sheet: light_sprite_sheet_handle.clone(),
-        sprite_number: 0, // ship is the first sprite in the sprite_sheet
-    };
-
-    // Assign the sprites for the dark ship
-    let dark_sprite_render = SpriteRender {
-        sprite_sheet: dark_sprite_sheet_handle.clone(),
-        sprite_number: 0, // ship is the first sprite in the sprite_sheet
-    };
-
-    // Create a light ship entity.
-    world
-        .create_entity()
-        .with(light_sprite_render.clone())
-        .with(Ship::new(Side::Light))
-        .with(light_transform)
-        .with(phys.clone())
-        .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
-        .build();
-
-    // Create dark ship entity.
-    world
-        .create_entity()
-        .with(dark_sprite_render.clone())
-        .with(Ship::new(Side::Dark))
-        .with(dark_transform)
-        .with(phys.clone())
-        .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 }
 

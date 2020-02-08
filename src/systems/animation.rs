@@ -1,50 +1,49 @@
 use amethyst::{
     animation::{
-        get_animation_set, AnimationBundle, AnimationCommand, AnimationControlSet, AnimationSet, EndControl,
+        get_animation_set, AnimationCommand, AnimationControlSet, AnimationSet, EndControl,
     },
-    derive::SystemDesc,
     renderer::{
-        plugins::{RenderFlat2D},
         sprite::SpriteRender,
     },
     ecs::{WriteStorage, Read, ReadStorage, Entities, System, Join},
 };
 
-use crate::paladin::{Animation, Explosion, AnimationId};
+use crate::components::{LaserImpact, Animation, AnimationId};
 
-pub struct ExplosionAnimationSystem;
+pub struct LaserImpactAnimationSystem;
 
-impl<'s> System<'s> for ExplosionAnimationSystem {
+impl<'s> System<'s> for LaserImpactAnimationSystem {
     type SystemData = (
         Entities<'s>,
-        ReadStorage<'s, Explosion>,
+        ReadStorage<'s, LaserImpact>,
         WriteStorage<'s, Animation>,
         WriteStorage<'s, AnimationControlSet<AnimationId, SpriteRender>>,
     );
 
     fn run(&mut self, (
         entities, 
-        explosions, 
+        laser_impacts, 
         mut animations, 
         mut animation_control_sets,
     ): Self::SystemData) {
         
         for (entity, _, mut animation, animation_control_set) in (
             &entities,
-            &explosions, 
+            &laser_impacts, 
             &mut animations, 
-            &mut animation_control_sets).join() {
+            &mut animation_control_sets
+        ).join() {
             
-                if animation.show {
+            if animation.show {
                 animation_control_set.start(animation.current);
                 animation.show = false;
             } else {
-                let explode_animation = animation_control_set
+                let laser_impact_animation = animation_control_set
                     .animations
                     .iter()
-                    .find(|(id, _)| *id == AnimationId::Explosion);
+                    .find(|(id, _)| *id == AnimationId::LaserImpact);
 
-                if explode_animation.is_none() {
+                if laser_impact_animation.is_none() {
                     let _ = entities.delete(entity);
                 }
             }
@@ -80,7 +79,8 @@ impl<'s> System<'s> for AnimationControlSystem {
                         );
 
                         let end = match animation_id {
-                            AnimationId::Explosion => EndControl::Stay
+                            AnimationId::LaserImpact => EndControl::Stay,
+                            _ => EndControl::Loop(None),
                         };
                         animation_control_set.add_animation(
                             *animation_id,

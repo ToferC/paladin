@@ -1,3 +1,3 @@
-pub use self::explosion::*;
+pub use self::assets::*;
 
-pub mod explosion;
+pub mod assets;

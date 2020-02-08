@@ -2,7 +2,8 @@ use amethyst::core::{Transform, SystemDesc};
 use amethyst::derive::SystemDesc;
 use amethyst::ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage};
 
-use crate::paladin::{Physical, ARENA_HEIGHT, ARENA_WIDTH};
+use crate::paladin::{ARENA_HEIGHT, ARENA_WIDTH};
+use crate::components::Physical;
 
 #[derive(SystemDesc)]
 pub struct PhysicsSystem;

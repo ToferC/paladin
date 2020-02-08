@@ -1,20 +1,23 @@
 use amethyst::{
-    assets::AssetStorage,
+    assets::{AssetStorage, Handle, Prefab},
     audio::{output::Output, Source},
     core::timing::Time,
     core::transform::Transform,
-    core::math::{Vector3, Vector2},
+    core::math::{self, Vector3, Vector2},
     core::SystemDesc,
     derive::SystemDesc,
+    renderer::transparent::Transparent,
     input::{InputHandler, StringBindings},
-    ecs::prelude::{Join, Read, ReadExpect, Entities, ReadStorage, System, SystemData, World, WriteStorage, LazyUpdate},
+    ecs::prelude::{Entity, Join, Read, ReadExpect, Entities, ReadStorage, System, SystemData, World, WriteStorage, LazyUpdate},
 };
 
 use std::ops::Deref;
 use smallvec::SmallVec;
 
-use crate::paladin::{Ship, Side, Combat, Laser, LaserRes, Physical};
 use crate::audio::{play_laser_sound, Sounds};
+use crate::components::{LaserImpact, Laser, Ship, Side, LaserRes};
+use crate::components::{Animation, AnimationId, AnimationPrefabData};
+use crate::components::{Physical, Combat};
 
 #[derive(SystemDesc)]
 pub struct LaserSystem;
@@ -132,4 +135,29 @@ impl<'s> System<'s> for LaserSystem {
             physical: Physical,
         }
     }
+}
+
+pub fn show_laser_impact(
+    entities: &Entities,
+    prefab_handle: Handle<Prefab<AnimationPrefabData>>,
+    transform_x: f32,
+    transform_y: f32,
+    lazy_update: &ReadExpect<LazyUpdate>,
+) {
+    let laser_impact_entity: Entity = entities.create();
+
+    let scale: f32 = 1.0;
+
+    let mut transform = Transform::default();
+    transform.set_scale(math::Vector3::new(scale, scale, scale));
+    transform.set_translation_xyz(transform_x, scale.mul_add(32. - 15., transform_y), 0.);
+
+    lazy_update.insert(laser_impact_entity, LaserImpact::default());
+    lazy_update.insert(
+        laser_impact_entity,
+        Animation::new(AnimationId::LaserImpact, vec![AnimationId::LaserImpact]),
+    );
+    lazy_update.insert(laser_impact_entity, prefab_handle);
+    lazy_update.insert(laser_impact_entity, transform);
+    lazy_update.insert(laser_impact_entity, Transparent);
 }

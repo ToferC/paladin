@@ -3,7 +3,7 @@ pub use self::laser::LaserSystem;
 pub use self::collision_system::CollisionSystem;
 pub use self::physics::PhysicsSystem;
 pub use self::winner::WinnerSystem;
-pub use self::animation::{AnimationControlSystem, ExplosionAnimationSystem};
+pub use self::animation::{AnimationControlSystem, LaserImpactAnimationSystem};
 
 mod ship_movement;
 mod laser;

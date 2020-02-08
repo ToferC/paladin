@@ -4,10 +4,10 @@ mod paladin;
 mod systems;
 mod audio;
 mod resources;
+mod components;
 
 extern crate specs_derive;
 
-use crate::paladin::Paladin;
 use amethyst::{
     animation::AnimationBundle,
     assets::{PrefabLoaderSystem, PrefabLoaderSystemDesc},
@@ -26,7 +26,9 @@ use amethyst::{
 };
 
 use audio::Music;
-use paladin::{AnimationPrefabData, AnimationId};
+use crate::paladin::Paladin;
+use crate::components::{AnimationPrefabData, AnimationId};
+use systems::*;
 
 const BACKGROUND_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
@@ -47,7 +49,7 @@ fn main() -> amethyst::Result<()> {
     let assets_dir = app_root.join("assets");
 
     let game_data = GameDataBuilder::default()
-        // Prefabbundle
+        // Prefabbundlecar
         .with_system_desc(
             PrefabLoaderSystemDesc::<AnimationPrefabData>::default(),
             "scene_loader",
@@ -90,6 +92,11 @@ fn main() -> amethyst::Result<()> {
             systems::WinnerSystem,
             "winner_system",
             &["movement_system", "physics_system"],
+        )
+        .with(
+            LaserImpactAnimationSystem,
+            "laser_impact_animation_system",
+            &["laser_system"],
         )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()

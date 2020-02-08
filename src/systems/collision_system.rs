@@ -2,17 +2,17 @@ use amethyst::{
     assets::AssetStorage,
     audio::{output::Output, Source},
     core::{Transform, SystemDesc},
-    core::math::{distance, Point, Vector2},
     derive::SystemDesc,
-    ui::UiText,
     ecs::prelude::{Join, ReadStorage, Read, ReadExpect, Entities, System, SystemData, World, WriteStorage, LazyUpdate},
 };
 
 use std::ops::Deref;
 
-use crate::paladin::{Laser, Physical, Ship, Side, Combat, RandomGen, StructureText ,LASER_RADIUS, show_explosion};
-use crate::resources::explosion::{ExplosionRes};
+use crate::paladin::{RandomGen, LASER_RADIUS};
 use crate::audio::{play_impact_sound, Sounds};
+use crate::systems::laser::show_laser_impact;
+use crate::components::{Laser, Ship, Physical, Combat};
+use crate::resources::{PrefabList, AssetType};
 
 #[derive(SystemDesc)]
 pub struct CollisionSystem;
@@ -31,7 +31,7 @@ impl<'s> System<'s> for CollisionSystem {
         ReadExpect<'s, Sounds>,
         Option<Read<'s, Output>>,
         ReadExpect<'s, LazyUpdate>,
-        ReadExpect<'s, ExplosionRes>,
+        ReadExpect<'s, PrefabList>,
     );
 
     fn run(&mut self, (
@@ -47,7 +47,7 @@ impl<'s> System<'s> for CollisionSystem {
         sounds,
         audio_output,
         lazy_update,
-        explosion_res,
+        prefab_list,
     ): Self::SystemData) {
         
         // laser collision
@@ -89,9 +89,13 @@ impl<'s> System<'s> for CollisionSystem {
                     combat.structure -= damage;
                     play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
 
-                    show_explosion(
+                    let laser_impact_prefab_handle = {
+                        prefab_list.get(AssetType::LaserImpact).unwrap().clone();
+                    };
+
+                    show_laser_impact(
                         &entities,
-                        explosion_res.animation_render(),
+                        laser_impact_prefab_handle,
                         laser_x,
                         laser_y,
                         &lazy_update,
