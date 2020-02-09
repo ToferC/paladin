@@ -54,7 +54,7 @@ impl PrefabList {
         self.prefabs.insert(asset_type, prefab_handle);
     }
 
-    pub fn get(&mut self, asset_type: AssetType) -> Option<&Handle<Prefab<AnimationPrefabData>>> {
+    pub fn get(&self, asset_type: AssetType) -> Option<&Handle<Prefab<AnimationPrefabData>>> {
         self.prefabs.get(&asset_type)
     }
 }
@@ -66,7 +66,7 @@ pub fn load_assets(world: &mut World, asset_type_list: Vec<AssetType>) -> Progre
     let mut progress_counter = ProgressCounter::new();
 
     for &asset_type in asset_type_list.iter() {
-        let (texture_path, ron_path) = match asset_type {
+        let (_texture_path, ron_path) = match asset_type {
             AssetType::LaserImpact => ("", "prefab/laser_impact.ron"),
         };
 
@@ -113,30 +113,3 @@ pub fn load_sprite_sheet(world: &mut World, path: &str) -> Handle<SpriteSheet> {
         &sprite_sheet_store,
     )
 }
-
-/*
-pub struct ExplosionRes {
-    pub animation_id: AnimationId,
-    pub animation_prefab_handle: Handle<Prefab<AnimationPrefabData>>,
-}
-
-impl Component for ExplosionRes {
-    type Storage = DenseVecStorage<Self>;
-}
-
-impl ExplosionRes {
-    pub fn initialise(world: &mut World, progress_counter: &mut ProgressCounter) {
-        let animation_prefab_handle = world.exec(|loader: PrefabLoader<'_, AnimationPrefabData>| {
-            loader.load("prefab/laser_impact.ron", RonFormat, progress_counter)
-        });
-
-        let animation_id = AnimationId::LaserImpact;
-
-        world.insert(ExplosionRes { animation_id, animation_prefab_handle });
-    }
-
-    pub fn animation_render(&self) -> Handle<Prefab<AnimationPrefabData>> {
-        self.animation_prefab_handle.clone()
-    }
-}
-*/

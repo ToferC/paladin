@@ -80,7 +80,7 @@ impl<'s> System<'s> for AnimationControlSystem {
 
                         let end = match animation_id {
                             AnimationId::LaserImpact => EndControl::Stay,
-                            _ => EndControl::Loop(None),
+                            _ => EndControl::Loop(Some(1)),
                         };
                         animation_control_set.add_animation(
                             *animation_id,

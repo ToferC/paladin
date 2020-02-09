@@ -67,6 +67,11 @@ impl<'s> System<'s> for CollisionSystem {
                 phys.velocity.clone()
             };
 
+            let laser_trans = {
+                let trans = transforms.get(entity).expect("unable to load laser transform");
+                trans.clone()
+            };
+
             for (ship, ship_transform, combat, physical) in (&ships, &mut transforms, &mut combat, &mut physicals).join() {
                 let ship_x = ship_transform.translation().x;
                 let ship_y = ship_transform.translation().y;
@@ -90,7 +95,7 @@ impl<'s> System<'s> for CollisionSystem {
                     play_impact_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
 
                     let laser_impact_prefab_handle = {
-                        prefab_list.get(AssetType::LaserImpact).unwrap().clone();
+                        prefab_list.get(AssetType::LaserImpact).unwrap().clone()
                     };
 
                     show_laser_impact(
@@ -98,6 +103,8 @@ impl<'s> System<'s> for CollisionSystem {
                         laser_impact_prefab_handle,
                         laser_x,
                         laser_y,
+                        ship_x,
+                        ship_y,
                         &lazy_update,
                     );
 

@@ -140,17 +140,20 @@ impl<'s> System<'s> for LaserSystem {
 pub fn show_laser_impact(
     entities: &Entities,
     prefab_handle: Handle<Prefab<AnimationPrefabData>>,
-    transform_x: f32,
-    transform_y: f32,
+    laser_x: f32,
+    laser_y: f32,
+    ship_x: f32,
+    ship_y: f32,
     lazy_update: &ReadExpect<LazyUpdate>,
 ) {
     let laser_impact_entity: Entity = entities.create();
 
-    let scale: f32 = 1.0;
+    let scale: f32 = 4.0;
 
     let mut transform = Transform::default();
+
     transform.set_scale(math::Vector3::new(scale, scale, scale));
-    transform.set_translation_xyz(transform_x, scale.mul_add(32. - 15., transform_y), 0.);
+    transform.set_translation_xyz(laser_x, scale.mul_add(32. - 15., laser_y), 0.);
 
     lazy_update.insert(laser_impact_entity, LaserImpact::default());
     lazy_update.insert(
