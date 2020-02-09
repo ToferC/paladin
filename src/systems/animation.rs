@@ -89,8 +89,8 @@ impl<'s> System<'s> for AnimationControlSystem {
                             animation_id,
                             &animation_set.get(&animation_id).unwrap(),
                             end,
-                            1.0,
-                            AnimationCommand::Init,  
+                            0.1,
+                            AnimationCommand::Start,  
                         );
                     }
                 });

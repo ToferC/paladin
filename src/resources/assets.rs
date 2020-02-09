@@ -67,7 +67,7 @@ pub fn load_assets(world: &mut World, asset_type_list: Vec<AssetType>) -> Progre
 
     for &asset_type in asset_type_list.iter() {
         let (_texture_path, ron_path) = match asset_type {
-            AssetType::LaserImpact => ("", "prefab/laser_impact.ron"),
+            AssetType::LaserImpact => ("", "prefab/small_explosion.ron"),
         };
 
         match asset_type {

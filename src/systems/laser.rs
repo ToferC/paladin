@@ -111,7 +111,6 @@ impl<'s> System<'s> for LaserSystem {
                 lazy.insert(e, physical);
                 lazy.insert(e, laser_t);
                 lazy.insert(e, laser_resource.sprite_render());
-
             }
         }
 
@@ -143,14 +142,13 @@ pub fn show_laser_impact(
     laser_x: f32,
     laser_y: f32,
     rotation: UnitQuaternion<f32>,
+    scale_m: f32,
     lazy_update: &ReadExpect<LazyUpdate>,
 ) {
     let laser_impact_entity: Entity = entities.create();
 
-    let scale_m: f32 = 3.0;
-
     let scale = Vector3::new(scale_m, scale_m, scale_m);
-    let position = Translation3::new(laser_x, scale_m.mul_add(32. - 15., laser_y), 0.);
+    let position = Translation3::new(laser_x, laser_y, 0.);
 
     let transform = Transform::new(
         position,

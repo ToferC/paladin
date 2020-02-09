@@ -68,12 +68,20 @@ impl<'s> System<'s> for MovementSystem {
 
             if let Some(thrust) = thrust {
 
-                if thrust != 0.0 {
+                if thrust > 0.0 {
+
                     let added = math::Vector3::y() * physical.acceleration * time.delta_seconds() * thrust;
                     let added = transform.rotation() * added;
-                    physical.velocity[0] += added.x;
-                    physical.velocity[1] += added.y;
-    
+                    physical.velocity += math::Vector2::new(added.x, added.y);
+
+                    // limit velocity
+                    let magnitude = physical.velocity.magnitude();
+
+                    if magnitude > physical.max_velocity {
+                        physical.velocity /= magnitude / physical.max_velocity;
+                    }
+
+                    // Timer for basic sound effects
                     if ship.thrust_timer <= 0.0 {
                         // play SFX
                         play_thrust_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));

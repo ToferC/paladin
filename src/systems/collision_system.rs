@@ -100,6 +100,7 @@ impl<'s> System<'s> for CollisionSystem {
                         laser_x,
                         laser_y,
                         laser_rotation,
+                        1.0,
                         &lazy_update,
                     );
 
@@ -164,8 +165,6 @@ impl<'s> System<'s> for CollisionSystem {
 
                 light_physical.velocity[0] = -light_physical.velocity[0];
                 light_physical.velocity[1] = -light_physical.velocity[1];
-
-               
 
             }
 

@@ -23,7 +23,7 @@ impl Physical {
             velocity: math::Vector2::new(0.0, 0.0),
             acceleration: acceleration,
             agility: agility,
-            max_velocity: 110.0,
+            max_velocity: 5.0,
             rotation: 0.0,
             radius: radius,
             mass: mass,

@@ -10,6 +10,7 @@ use crate::resources::load_sprite_sheet;
 
 use super::physical::Physical;
 use super::combat::Combat;
+use super::enemy::EnemyAi;
 
 use crate::paladin::{ARENA_HEIGHT, ARENA_WIDTH};
 
