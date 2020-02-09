@@ -57,7 +57,7 @@ Prefab(
                     animations: [
                         (
                             // AnimationId
-                            Explosion,
+                            LaserImpact,
                             (
                                 samplers: [
                                     (

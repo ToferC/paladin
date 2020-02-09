@@ -14,8 +14,7 @@ use std::{iter::Cycle, vec::IntoIter};
 const LASER_SOUND: &str = "audio/laser.ogg";
 const THRUST_SOUND: &str = "audio/thrust.ogg";
 const IMPACT_SOUND: &str = "audio/impact.ogg";
-const EXPLOSION_SOUND: &str = "audio/explosion.ogg";
-const SCORE_SOUND: &str = "audio/score.ogg";
+//const EXPLOSION_SOUND: &str = "audio/explosion.ogg";
 
 const MUSIC_TRACKS: &[&str] = &[
     "audio/thrust_sequence.ogg",

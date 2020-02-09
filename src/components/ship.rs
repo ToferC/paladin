@@ -83,7 +83,7 @@ pub fn initialise_ships(world: &mut World) {
         .with(Ship::new(Side::Light))
         .with(light_transform)
         .with(phys.clone())
-        .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
+        .with(Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 
     // Create dark ship entity.
@@ -93,6 +93,6 @@ pub fn initialise_ships(world: &mut World) {
         .with(Ship::new(Side::Dark))
         .with(dark_transform)
         .with(phys.clone())
-        .with(Combat::new(150, 5, 10, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
+        .with(Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
         .build();
 }

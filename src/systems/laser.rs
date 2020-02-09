@@ -3,7 +3,7 @@ use amethyst::{
     audio::{output::Output, Source},
     core::timing::Time,
     core::transform::Transform,
-    core::math::{self, Vector3, Vector2},
+    core::math::{Vector3, Vector2, UnitQuaternion, Translation3},
     core::SystemDesc,
     derive::SystemDesc,
     renderer::transparent::Transparent,
@@ -142,18 +142,21 @@ pub fn show_laser_impact(
     prefab_handle: Handle<Prefab<AnimationPrefabData>>,
     laser_x: f32,
     laser_y: f32,
-    ship_x: f32,
-    ship_y: f32,
+    rotation: UnitQuaternion<f32>,
     lazy_update: &ReadExpect<LazyUpdate>,
 ) {
     let laser_impact_entity: Entity = entities.create();
 
-    let scale: f32 = 4.0;
+    let scale_m: f32 = 3.0;
 
-    let mut transform = Transform::default();
+    let scale = Vector3::new(scale_m, scale_m, scale_m);
+    let position = Translation3::new(laser_x, scale_m.mul_add(32. - 15., laser_y), 0.);
 
-    transform.set_scale(math::Vector3::new(scale, scale, scale));
-    transform.set_translation_xyz(laser_x, scale.mul_add(32. - 15., laser_y), 0.);
+    let transform = Transform::new(
+        position,
+        rotation,
+        scale,
+    );
 
     lazy_update.insert(laser_impact_entity, LaserImpact::default());
     lazy_update.insert(

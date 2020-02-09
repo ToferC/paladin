@@ -17,6 +17,12 @@ pub enum AnimationId {
     LaserImpact,
 }
 
+impl Default for AnimationId {
+    fn default() -> Self {
+        AnimationId::LaserImpact
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PrefabData)]
 pub struct AnimationPrefabData {
     sprite_scene: SpriteScenePrefab,

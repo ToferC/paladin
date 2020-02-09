@@ -54,22 +54,18 @@ impl<'s> System<'s> for CollisionSystem {
         for (laser, entity) in (&lasers, &entities).join() {
 
             // get laser coordinates
-            let (laser_x, laser_y) = {
+            let (laser_x, laser_y, laser_rotation) = {
                 let trans = transforms.get(entity).expect("Unable to load laser transform");
                 let l_x = trans.translation().x;
                 let l_y = trans.translation().y;
-                (l_x, l_y)
+                let l_r = trans.rotation();
+                (l_x, l_y, l_r.clone())
             };
 
             // get laser velocity - used for impact to ship velocity
             let laser_vel = {
                 let phys = physicals.get(entity).expect("Unable to load laser physical");
                 phys.velocity.clone()
-            };
-
-            let laser_trans = {
-                let trans = transforms.get(entity).expect("unable to load laser transform");
-                trans.clone()
             };
 
             for (ship, ship_transform, combat, physical) in (&ships, &mut transforms, &mut combat, &mut physicals).join() {
@@ -103,8 +99,7 @@ impl<'s> System<'s> for CollisionSystem {
                         laser_impact_prefab_handle,
                         laser_x,
                         laser_y,
-                        ship_x,
-                        ship_y,
+                        laser_rotation,
                         &lazy_update,
                     );
 

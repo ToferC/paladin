@@ -10,7 +10,7 @@ extern crate specs_derive;
 
 use amethyst::{
     animation::AnimationBundle,
-    assets::{PrefabLoaderSystemDesc},
+    assets::{PrefabLoaderSystem, PrefabLoaderSystemDesc},
     core::TransformBundle,
     prelude::*,
     audio::{AudioBundle, DjSystemDesc},
@@ -26,7 +26,7 @@ use amethyst::{
 };
 
 use audio::Music;
-use crate::paladin::Paladin;
+use crate::paladin::MainState;
 use crate::components::{AnimationPrefabData, AnimationId};
 use systems::*;
 
@@ -96,7 +96,7 @@ fn main() -> amethyst::Result<()> {
         .with(
             LaserImpactAnimationSystem,
             "laser_impact_animation_system",
-            &["laser_system"],
+            &["laser_system", "collision_system"],
         )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
@@ -111,7 +111,7 @@ fn main() -> amethyst::Result<()> {
                 .with_plugin(RenderUi::default()),
         )?;
 
-    let mut game = Application::new(assets_dir, Paladin::default(), game_data)?;
+    let mut game = Application::new(assets_dir, MainState::default(), game_data)?;
     game.run();
     Ok(())
 }

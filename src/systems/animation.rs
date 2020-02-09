@@ -67,6 +67,7 @@ impl<'s> System<'s> for AnimationControlSystem {
 
         for (entity, animation, animation_set) in (&entities, &animations, &animation_sets).join() {
             
+            // fetch or create the AnimationControlSet for this entity
             let animation_control_set = get_animation_set(&mut animation_control_sets, entity).unwrap();
 
             if animation.show {
@@ -80,14 +81,14 @@ impl<'s> System<'s> for AnimationControlSystem {
 
                         let end = match animation_id {
                             AnimationId::LaserImpact => EndControl::Stay,
-                            _ => EndControl::Loop(Some(1)),
+                            _ => EndControl::Loop(None),
                         };
                         animation_control_set.add_animation(
                             *animation_id,
                             &animation_set.get(&animation_id).unwrap(),
                             end,
                             1.0,
-                            AnimationCommand::Init,  
+                            AnimationCommand::Start,  
                         );
                     }
                 });
