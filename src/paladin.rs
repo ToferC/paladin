@@ -8,7 +8,7 @@ use amethyst::{
 use crate::audio::{initialize_audio};
 use crate::resources::assets::*;
 
-use crate::components::{LaserRes, Laser, initialise_ships};
+use crate::components::{LaserRes, Laser, initialise_ships, ThrustRes};
 use crate::components::{initialize_scoreboard, initialize_ship_hp_ui};
 
 pub const ARENA_HEIGHT: f32 = 1024.0;
@@ -36,6 +36,7 @@ impl SimpleState for MainState {
             world,
             vec![
                 AssetType::LaserImpact,
+                AssetType::Thrust,
             ],
         ));
 

@@ -5,11 +5,13 @@ use amethyst::{
     assets::AssetStorage,
     audio::{output::Output, Source},
 };
-use amethyst::ecs::{Join, Read, ReadExpect, System, SystemData, World, WriteStorage};
+use amethyst::ecs::{Join, Entities, LazyUpdate, Read, ReadExpect, System, SystemData, World, WriteStorage};
 use amethyst::input::{InputHandler, StringBindings};
 
 use crate::audio::{play_thrust_sound, Sounds};
 use crate::components::{Ship, Side, Physical};
+use crate::components::{Thrust, ThrustRes, show_thrust};
+use crate::resources::{AssetType, SpriteSheetList};
 
 use std::ops::Deref;
 
@@ -18,21 +20,26 @@ pub struct MovementSystem;
 
 impl<'s> System<'s> for MovementSystem {
     type SystemData = (
+        Entities<'s>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Physical>,
         WriteStorage<'s, Ship>,
+        ReadExpect<'s, SpriteSheetList>,
         Read<'s, InputHandler<StringBindings>>,
         Read<'s, Time>,
 
         Read<'s, AssetStorage<Source>>,
         ReadExpect<'s, Sounds>,
         Option<Read<'s, Output>>,
+        ReadExpect<'s, LazyUpdate>,
     );
 
     fn run(&mut self, (
+        entities,
         mut transforms, 
         mut physicals, 
-        mut ships, 
+        mut ships,
+        sprite_sheet_list,
         input, 
         time, 
 
@@ -40,6 +47,7 @@ impl<'s> System<'s> for MovementSystem {
         storage,
         sounds,
         audio_output,
+        lazy,
      ): Self::SystemData) {
          
         for (ship, transform, physical) in (&mut ships, &mut transforms, &mut physicals).join() {
@@ -89,6 +97,23 @@ impl<'s> System<'s> for MovementSystem {
                     } else {
                         ship.thrust_timer -= time.delta_seconds();
                     }
+
+                    // show thruster
+                    let thrust_spritesheet_handle = {
+                        sprite_sheet_list.get(AssetType::Thrust).unwrap().clone()
+                    };
+
+                    let ship_transform = transform.clone();
+
+                    /*
+
+                    show_thrust(
+                        &entities,
+                        thrust_spritesheet_handle,
+                        &lazy,
+                        ship_transform,
+                    );
+                    */
                 }
             }
 

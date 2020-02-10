@@ -6,7 +6,7 @@ use amethyst::{
     assets::{Handle, Prefab, PrefabLoader, RonFormat, ProgressCounter},
     assets::{AssetStorage, Loader},
     renderer::{
-        sprite::{SpriteSheetHandle},
+        sprite::SpriteSheetHandle,
         ImageFormat, SpriteSheet, 
             SpriteSheetFormat, Texture,
 
@@ -21,6 +21,7 @@ pub enum AssetType {
     //Background,
     //Laser,
     LaserImpact,
+    Thrust,
     //LightShip,
     //DarkShip,
 }
@@ -35,7 +36,7 @@ impl SpriteSheetList {
         self.sprite_sheets.insert(asset_type, sprite_sheet_handle);
     }
 
-    pub fn get(&mut self, asset_type: AssetType) -> Option<&SpriteSheetHandle> {
+    pub fn get(&self, asset_type: AssetType) -> Option<&SpriteSheetHandle> {
         self.sprite_sheets.get(&asset_type)
     }
 }
@@ -66,11 +67,17 @@ pub fn load_assets(world: &mut World, asset_type_list: Vec<AssetType>) -> Progre
     let mut progress_counter = ProgressCounter::new();
 
     for &asset_type in asset_type_list.iter() {
-        let (_texture_path, ron_path) = match asset_type {
+        let (texture_path, ron_path) = match asset_type {
             AssetType::LaserImpact => ("", "prefab/small_explosion.ron"),
+            AssetType::Thrust => ("texture/thrust.png", "texture/thrust.ron"),
         };
 
         match asset_type {
+            AssetType::Thrust => {
+                let sprite_sheet_handle = 
+                    get_sprite_sheet_handle(world, texture_path, ron_path, &mut progress_counter);
+                sprite_sheet_list.insert(asset_type, sprite_sheet_handle);
+            }
             AssetType::LaserImpact => {
                 let prefab_handle = get_animation_prefab_handle(world, ron_path, &mut progress_counter);
                 prefab_list.insert(asset_type, prefab_handle);
@@ -78,6 +85,7 @@ pub fn load_assets(world: &mut World, asset_type_list: Vec<AssetType>) -> Progre
         };
     };
 
+    world.insert(sprite_sheet_list);
     world.insert(prefab_list);
     progress_counter
 }
@@ -90,6 +98,28 @@ fn get_animation_prefab_handle(
     world.exec(|loader: PrefabLoader<'_, AnimationPrefabData>| {
         loader.load(ron_path, RonFormat, progress_counter)
     })
+}
+
+pub fn get_sprite_sheet_handle(
+    world: &World,
+    texture_path: &str,
+    ron_path: &str,
+    progress_counter: &mut ProgressCounter,
+) -> SpriteSheetHandle {
+    // Load the sprite sheet needed to render graphics
+    let texture_handle = {
+        let loader = &world.read_resource::<Loader>();
+        let texture_storage = &world.read_resource::<AssetStorage<Texture>>();
+        loader.load(texture_path, ImageFormat::default(), (), &texture_storage)
+    };
+    let loader = &world.read_resource::<Loader>();
+    let sprite_sheet_store = &world.read_resource::<AssetStorage<SpriteSheet>>();
+    loader.load(
+        ron_path,
+        SpriteSheetFormat(texture_handle),
+        progress_counter,
+        &sprite_sheet_store,
+    )
 }
 
 /// helper function to load sprites
