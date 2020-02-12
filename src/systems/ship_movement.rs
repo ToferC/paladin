@@ -45,7 +45,7 @@ impl<'s> System<'s> for MovementSystem {
         time,
         mut thrust_entities,
         mut hidden_entities,
-        parents,
+        mut parents,
 
         // audio
         storage,
@@ -79,9 +79,10 @@ impl<'s> System<'s> for MovementSystem {
 
             if let Some(thrust) = thrust {
 
+                // Get thrust entity so we can apply and remove the Hidden tag
                 let thrust_entity = (&entities, &parents).join()
-                    .find_map(|(entity, parent)| if parent.entity == entity {
-                    Some(entity)
+                    .find_map(|(ent, parent)| if parent.entity == entity {
+                    Some(ent)
                 } else {
                     None
                 });
