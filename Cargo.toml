@@ -15,4 +15,4 @@ specs-derive = "*"
 
 [dependencies.amethyst]
 version = "0.13.2"
-features = ["vulkan"]
+features = ["vulkan", "nightly"]

@@ -1,8 +1,8 @@
 use amethyst::{
-    core::{transform::Transform, math},
-    ecs::prelude::{Component, DenseVecStorage},
+    core::{transform::Transform, Parent, Hidden, math},
+    ecs::prelude::{Component, DenseVecStorage, LazyUpdate},
     prelude::*,
-    renderer::{SpriteRender,
+    renderer::{SpriteRender, Transparent,
     },
 };
 
@@ -11,6 +11,8 @@ use crate::resources::load_sprite_sheet;
 use super::physical::Physical;
 use super::combat::Combat;
 use super::enemy::EnemyAi;
+use super::thrust::Thrust;
+use crate::resources::{SpriteSheetList, AssetType};
 
 use crate::paladin::{ARENA_HEIGHT, ARENA_WIDTH};
 
@@ -22,6 +24,7 @@ pub enum Side {
     Dark,
 }
 
+#[derive(Debug)]
 pub struct Ship {
     pub side: Side,
     pub thrust_timer: f32,
@@ -77,23 +80,82 @@ pub fn initialise_ships(world: &mut World) {
         sprite_number: 0, // ship is the first sprite in the sprite_sheet
     };
 
-    // Create a light ship entity.
-    world
-        .create_entity()
-        .with(light_sprite_render.clone())
-        .with(Ship::new(Side::Light))
-        .with(light_transform)
-        .with(phys.clone())
-        .with(Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
-        .build();
+    // Load resources for adding thrust
+    let lazy = world.try_fetch::<LazyUpdate>().expect("Unable to load LazyUpdate");
 
-    // Create dark ship entity.
-    world
-        .create_entity()
-        .with(dark_sprite_render.clone())
-        .with(Ship::new(Side::Dark))
-        .with(dark_transform)
-        .with(phys.clone())
-        .with(Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0))
-        .build();
+    // show thruster
+    let sprite_sheet_list = {
+        world.try_fetch::<SpriteSheetList>().expect("Unable to fetch SpriteSheetList")
+    };
+
+    // Get Sprite sheet handle
+    let thrust_sprite_sheet_handle = sprite_sheet_list.get(AssetType::Thrust).unwrap();
+
+    // Construct sprite render for thruster
+    let thrust_sprite_render = SpriteRender {
+        sprite_sheet: thrust_sprite_sheet_handle.clone(),
+        sprite_number: 0,
+    };
+
+    // Create a light ship entity.
+    let light_ship = world.entities().create();
+    lazy.insert(light_ship, Ship::new(Side::Light));
+    lazy.insert(light_ship, light_sprite_render.clone());
+    lazy.insert(light_ship, light_transform);
+    lazy.insert(light_ship, phys.clone());
+    lazy.insert(light_ship, Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0));
+
+    // Create thrust entity for light ship
+    let light_thrust = world.entities().create();
+    
+    lazy.insert(
+        light_thrust,
+        Thrust {
+        show: false,
+    });
+    lazy.insert(
+        light_thrust,
+        thrust_sprite_render.clone(),
+    );
+    lazy.insert(light_thrust, Parent::new(light_ship));
+
+    let mut light_thrust_transform = Transform::from(math::Vector3::<f32>::new(
+        0., -200., 0.
+    ));
+    light_thrust_transform.rotate_2d(-1.6);
+
+    lazy.insert(light_thrust, light_thrust_transform);
+    lazy.insert(light_thrust, Transparent);
+    lazy.insert(light_thrust, Hidden);
+
+    
+    // Create a dark ship entity.
+    let dark_ship = world.entities().create();
+    lazy.insert(dark_ship, Ship::new(Side::Dark));
+    lazy.insert(dark_ship, dark_sprite_render.clone());
+    lazy.insert(dark_ship, dark_transform);
+    lazy.insert(dark_ship, phys.clone());
+    lazy.insert(dark_ship, Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0));
+
+    // Create thrust entity for dark ship
+    let dark_thrust = world.entities().create();
+    
+    lazy.insert(
+        dark_thrust,
+        Thrust {
+        show: false,
+    });
+    lazy.insert(
+        dark_thrust,
+        thrust_sprite_render.clone(),
+    );
+    lazy.insert(dark_thrust, Parent::new(dark_ship));
+    let mut dark_thrust_transform = Transform::from(math::Vector3::<f32>::new(
+        0., -200., 0.
+    ));
+    dark_thrust_transform.rotate_2d(-1.6);
+
+    lazy.insert(dark_thrust, dark_thrust_transform);
+    lazy.insert(dark_thrust, Transparent);
+    lazy.insert(dark_thrust, Hidden);
 }

@@ -1,4 +1,4 @@
-use amethyst::core::{Transform, SystemDesc, math};
+use amethyst::core::{Transform, SystemDesc, math, Hidden, Parent};
 use amethyst::core::timing::Time;
 use amethyst::derive::SystemDesc;
 use amethyst::{
@@ -24,9 +24,11 @@ impl<'s> System<'s> for MovementSystem {
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Physical>,
         WriteStorage<'s, Ship>,
-        ReadExpect<'s, SpriteSheetList>,
         Read<'s, InputHandler<StringBindings>>,
         Read<'s, Time>,
+        WriteStorage<'s, Thrust>,
+        WriteStorage<'s, Hidden>,
+        WriteStorage<'s, Parent>,
 
         Read<'s, AssetStorage<Source>>,
         ReadExpect<'s, Sounds>,
@@ -39,9 +41,11 @@ impl<'s> System<'s> for MovementSystem {
         mut transforms, 
         mut physicals, 
         mut ships,
-        sprite_sheet_list,
         input, 
-        time, 
+        time,
+        mut thrust_entities,
+        mut hidden_entities,
+        parents,
 
         // audio
         storage,
@@ -50,7 +54,7 @@ impl<'s> System<'s> for MovementSystem {
         lazy,
      ): Self::SystemData) {
          
-        for (ship, transform, physical) in (&mut ships, &mut transforms, &mut physicals).join() {
+        for (entity, ship, transform, physical) in (&entities, &mut ships, &mut transforms, &mut physicals).join() {
 
             let movement = match ship.side {
                 Side::Light => input.axis_value("rotate"),
@@ -73,11 +77,18 @@ impl<'s> System<'s> for MovementSystem {
                 _ => None,
             };
 
-
             if let Some(thrust) = thrust {
 
-                if thrust > 0.0 {
+                let thrust_entity = (&entities, &parents).join()
+                    .find_map(|(entity, parent)| if parent.entity == entity {
+                    Some(entity)
+                } else {
+                    None
+                });
 
+                let thrust_entity = thrust_entity.unwrap();
+
+                if thrust > 0.0 {
                     let added = math::Vector3::y() * physical.acceleration * time.delta_seconds() * thrust;
                     let added = transform.rotation() * added;
                     physical.velocity += math::Vector2::new(added.x, added.y);
@@ -89,6 +100,9 @@ impl<'s> System<'s> for MovementSystem {
                         physical.velocity /= magnitude / physical.max_velocity;
                     }
 
+                    // Remove Hidden tag
+                    hidden_entities.remove(thrust_entity);
+
                     // Timer for basic sound effects
                     if ship.thrust_timer <= 0.0 {
                         // play SFX
@@ -98,22 +112,10 @@ impl<'s> System<'s> for MovementSystem {
                         ship.thrust_timer -= time.delta_seconds();
                     }
 
-                    // show thruster
-                    let thrust_spritesheet_handle = {
-                        sprite_sheet_list.get(AssetType::Thrust).unwrap().clone()
-                    };
 
-                    let ship_transform = transform.clone();
-
-                    /*
-
-                    show_thrust(
-                        &entities,
-                        thrust_spritesheet_handle,
-                        &lazy,
-                        ship_transform,
-                    );
-                    */
+                } else {
+                    // No thrust - add hidden tag
+                    hidden_entities.insert(thrust_entity, Hidden).expect("");
                 }
             }
 

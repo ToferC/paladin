@@ -5,11 +5,13 @@ use amethyst::{
     prelude::*,
 };
 
+use crate::components::{Physical, Ship};
+
 use crate::resources::assets::load_sprite_sheet;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Thrust {
-    show: bool
+    pub show: bool,
 }
 
 impl Component for Thrust {
@@ -46,6 +48,7 @@ pub fn show_thrust(
     sprite_sheet_handle: SpriteSheetHandle,
     lazy: &ReadExpect<LazyUpdate>,
     mut transform: Transform,
+    mut physical: Physical,
 ) {
     let e : Entity = entities.create();
 
@@ -57,7 +60,11 @@ pub fn show_thrust(
         sprite_number: 0,
     };
 
+    transform.rotate_2d(-1.6);
+
     lazy.insert(e, transform);
-    lazy.insert(e, Thrust::default());
+    lazy.insert(e, physical);
+    lazy.insert(e, Transparent);
+    //lazy.insert(e, Thrust::default());
     lazy.insert(e, sprite_render);
 }

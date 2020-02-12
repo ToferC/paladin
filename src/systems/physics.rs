@@ -1,4 +1,4 @@
-use amethyst::core::{Transform, SystemDesc};
+use amethyst::core::{Transform, SystemDesc, Parent};
 use amethyst::derive::SystemDesc;
 use amethyst::ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage};
 
@@ -12,9 +12,10 @@ impl<'s> System<'s> for PhysicsSystem {
     type SystemData = (
         WriteStorage<'s, Transform>,
         ReadStorage<'s, Physical>,
+        ReadStorage<'s, Parent>,
     );
 
-    fn run(&mut self, (mut transforms, physicals): Self::SystemData) {
+    fn run(&mut self, (mut transforms, physicals, parent): Self::SystemData) {
         for (transform, physical) in (&mut transforms, &physicals).join() {
 
             transform.prepend_translation_x(physical.velocity[0]);

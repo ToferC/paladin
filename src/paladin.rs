@@ -1,6 +1,6 @@
 use amethyst::{
     assets::{ProgressCounter},
-    core::{transform::Transform},
+    core::{transform::Transform, Parent},
     prelude::*,
     renderer::Camera,
 };
@@ -42,6 +42,8 @@ impl SimpleState for MainState {
 
         LaserRes::initialise(world);
         world.insert(RandomGen);
+
+        world.register::<Parent>();
 
         initialize_scoreboard(world);
         initialize_ship_hp_ui(world);
