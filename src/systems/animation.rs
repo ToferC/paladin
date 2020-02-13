@@ -30,12 +30,12 @@ impl<'s> System<'s> for LaserImpactAnimationSystem {
         for (entity, _, mut animation) in (
             &entities,
             &laser_impacts, 
-            &mut animations, 
+            &mut animations,
         )
             .join() 
         {
             let animation_control_set = get_animation_set(&mut animation_control_sets, entity).unwrap();
-           
+
             if animation.show {
                 animation_control_set.start(animation.current);
                 animation.show = false;
@@ -82,7 +82,7 @@ impl<'s> System<'s> for AnimationControlSystem {
                         );
 
                         let end = match animation_id {
-                            AnimationId::LaserImpact => EndControl::Loop(None),
+                            AnimationId::LaserImpact => EndControl::Stay,
                             _ => EndControl::Loop(None),
                         };
                         animation_control_set.add_animation(
@@ -90,7 +90,7 @@ impl<'s> System<'s> for AnimationControlSystem {
                             &animation_set.get(&animation_id).unwrap(),
                             end,
                             0.1,
-                            AnimationCommand::Start,  
+                            AnimationCommand::Init,  
                         );
                     }
                 });

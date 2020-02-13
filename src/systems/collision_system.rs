@@ -103,6 +103,7 @@ impl<'s> System<'s> for CollisionSystem {
                         1.0,
                         &lazy_update,
                     );
+                    let _ = entities.delete(entity);
 
                     if combat.structure <= 0 {
                         // explode ship and delete

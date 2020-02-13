@@ -105,7 +105,7 @@ pub fn initialise_ships(world: &mut World) {
     lazy.insert(light_ship, light_sprite_render.clone());
     lazy.insert(light_ship, light_transform);
     lazy.insert(light_ship, light_phys.clone());
-    lazy.insert(light_ship, Combat::new(150, 5, 20, 6.0, 10.0, LaserType::Single, 0.2, 25, 30.0, 6.0, 5.0));
+    lazy.insert(light_ship, Combat::new(150, 6, 20, 6.0, 10.0, LaserType::Single, 0.2, 25, 30.0, 6.0, 5.0));
 
     // Create thrust entity for light ship
     let light_thrust = world.entities().create();
