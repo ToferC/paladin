@@ -8,11 +8,11 @@ use amethyst::{
 use crate::audio::{initialize_audio};
 use crate::resources::assets::*;
 
-use crate::components::{LaserRes, Laser, initialise_ships, ThrustRes};
+use crate::components::{initialise_ships};
 use crate::components::{initialize_scoreboard, initialize_ship_hp_ui};
 
-pub const ARENA_HEIGHT: f32 = 1024.0;
-pub const ARENA_WIDTH: f32 = 1600.0;
+pub const ARENA_HEIGHT: f32 = 1024.0 * 1.2;
+pub const ARENA_WIDTH: f32 = 1600.0 * 1.2;
 
 pub const LASER_RADIUS: f32 = 4.0;
 
@@ -28,8 +28,6 @@ impl SimpleState for MainState {
         // `spritesheet` is the layout of the sprites on the image;
         // `texture` is the pixel data.
 
-        world.register::<Laser>();
-
         initialize_audio(world);
 
         let _progress_counter = Some(load_assets(
@@ -37,10 +35,13 @@ impl SimpleState for MainState {
             vec![
                 AssetType::LaserImpact,
                 AssetType::Thrust,
+                AssetType::LaserLight,
+                AssetType::LaserDark,
+                AssetType::LightShip,
+                AssetType::DarkShip,
             ],
         ));
 
-        LaserRes::initialise(world);
         world.insert(RandomGen);
 
         world.register::<Parent>();

@@ -10,7 +10,7 @@ use amethyst::input::{InputHandler, StringBindings};
 
 use crate::audio::{play_thrust_sound, Sounds};
 use crate::components::{Ship, Side, Physical};
-use crate::components::{Thrust, ThrustRes, show_thrust};
+use crate::components::{Thrust};
 use crate::resources::{AssetType, SpriteSheetList};
 
 use std::ops::Deref;
@@ -57,8 +57,8 @@ impl<'s> System<'s> for MovementSystem {
         for (entity, ship, transform, physical) in (&entities, &mut ships, &mut transforms, &mut physicals).join() {
 
             let movement = match ship.side {
-                Side::Light => input.axis_value("rotate"),
-                _ => None,
+                Side::Light => input.axis_value("light_rotate"),
+                Side::Dark => input.axis_value("dark_rotate"),
             };
             if let Some(mv_amount) = movement {
                 if mv_amount != 0.0 {
@@ -68,13 +68,8 @@ impl<'s> System<'s> for MovementSystem {
             }
 
             let thrust = match ship.side {
-                Side::Light => input.axis_value("accelerate"),
-                _ => None,
-            };
-
-            let drift = match ship.side {
-                Side::Light => input.axis_value("drift"),
-                _ => None,
+                Side::Light => input.axis_value("light_accelerate"),
+                Side::Dark => input.axis_value("dark_accelerate"),
             };
 
             if let Some(thrust) = thrust {
@@ -117,14 +112,6 @@ impl<'s> System<'s> for MovementSystem {
                 } else {
                     // No thrust - add hidden tag
                     hidden_entities.insert(thrust_entity, Hidden).expect("");
-                }
-            }
-
-            if let Some(drift) = drift {
-                if drift > 0.0 {
-                    transform.move_left(physical.acceleration * drift);
-                } else if drift < 0.0 {
-                    transform.move_left(physical.acceleration * drift);
                 }
             }
         }

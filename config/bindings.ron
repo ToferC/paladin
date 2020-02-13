@@ -1,12 +1,17 @@
 (
     axes: {
-        "rotate": Emulated(pos: Key(D), neg: Key(A)),
-        "drift": Emulated(pos: Key(Q), neg: Key(E)),
-        "accelerate": Emulated(pos: Key(W), neg: Key(S)),
+        "light_rotate": Emulated(pos: Key(D), neg: Key(A)),
+        "light_accelerate": Emulated(pos: Key(W), neg: Key(S)),
+
+        "dark_rotate": Emulated(pos: Key(Right), neg: Key(Left)),
+        "dark_accelerate": Emulated(pos: Key(Up), neg: Key(Down)),
     },
     actions: {
-        "shoot": [
+        "light_shoot": [
             [Key(Space)]
+        ],
+        "dark_shoot": [
+            [Key(RControl)]
         ],
         "pause": [
             [Key(P)]

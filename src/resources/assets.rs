@@ -19,11 +19,12 @@ use crate::components::{AnimationPrefabData};
 #[derive(Copy, Clone, Eq, Hash, PartialEq)]
 pub enum AssetType {
     //Background,
-    //Laser,
+    LaserLight,
+    LaserDark,
     LaserImpact,
     Thrust,
-    //LightShip,
-    //DarkShip,
+    LightShip,
+    DarkShip,
 }
 
 #[derive(Default)]
@@ -70,10 +71,18 @@ pub fn load_assets(world: &mut World, asset_type_list: Vec<AssetType>) -> Progre
         let (texture_path, ron_path) = match asset_type {
             AssetType::LaserImpact => ("", "prefab/small_explosion.ron"),
             AssetType::Thrust => ("texture/thrust.png", "texture/thrust.ron"),
+            AssetType::LaserLight => ("texture/bullet.png", "texture/bullet.ron"),
+            AssetType::LaserDark => ("texture/dark_bullet.png", "texture/bullet.ron"),
+            AssetType::LightShip => ("texture/ship_spritesheet.png", "texture/ship_spritesheet.ron"),
+            AssetType::DarkShip => ("texture/dark_ship_spritesheet.png", "texture/dark_ship_spritesheet.ron"),
         };
 
         match asset_type {
-            AssetType::Thrust => {
+            AssetType::Thrust
+            | AssetType::LaserLight 
+            | AssetType::LaserDark
+            | AssetType::LightShip
+            | AssetType::DarkShip => {
                 let sprite_sheet_handle = 
                     get_sprite_sheet_handle(world, texture_path, ron_path, &mut progress_counter);
                 sprite_sheet_list.insert(asset_type, sprite_sheet_handle);
@@ -118,28 +127,6 @@ pub fn get_sprite_sheet_handle(
         ron_path,
         SpriteSheetFormat(texture_handle),
         progress_counter,
-        &sprite_sheet_store,
-    )
-}
-
-/// helper function to load sprites
-pub fn load_sprite_sheet(world: &mut World, path: &str) -> Handle<SpriteSheet> {
-    let texture_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load(
-            format!("{}.png", path),
-            ImageFormat::default(),
-            (),
-            &texture_storage,
-        )
-    };
-    let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-    loader.load(
-        format!("{}.ron", path),
-        SpriteSheetFormat(texture_handle),
-        (),
         &sprite_sheet_store,
     )
 }

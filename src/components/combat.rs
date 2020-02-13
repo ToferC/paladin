@@ -9,6 +9,7 @@ pub struct Combat {
     pub laser_damage: i32,
     pub laser_timer: f32,
     pub laser_velocity: f32,
+    pub laser_type: LaserType,
     pub reload_timer: f32,
     pub time_to_reload: f32,
     pub burst_rate: i32,
@@ -26,6 +27,12 @@ impl Component for Combat {
     type Storage = DenseVecStorage<Self>;
 }
 
+#[derive(Debug)]
+pub enum LaserType {
+    Single,
+    Dual,
+}
+
 impl Combat {
     pub fn new(
         structure: i32,
@@ -33,7 +40,8 @@ impl Combat {
         laser_damage: i32,
         laser_timer: f32,
         laser_velocity: f32,
-
+        laser_type: LaserType,
+        time_to_reload: f32,
 
         missile_damage: i32,
         missile_timer: f32,
@@ -47,8 +55,9 @@ impl Combat {
                 laser_damage,
                 laser_timer,
                 laser_velocity,
+                laser_type,
                 reload_timer: 0.0,
-                time_to_reload: 0.2,
+                time_to_reload,
                 burst_rate: 8,
 
                 burst_delay: 0.05,

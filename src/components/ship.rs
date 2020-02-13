@@ -3,13 +3,13 @@ use amethyst::{
     ecs::prelude::{Component, DenseVecStorage, LazyUpdate},
     prelude::*,
     renderer::{SpriteRender, Transparent,
+        resources::Tint,
+        palette::Srgba,
     },
 };
 
-use crate::resources::load_sprite_sheet;
-
 use super::physical::Physical;
-use super::combat::Combat;
+use super::combat::{Combat, LaserType};
 use super::enemy::EnemyAi;
 use super::thrust::Thrust;
 use crate::resources::{SpriteSheetList, AssetType};
@@ -45,10 +45,14 @@ impl Component for Ship {
 
 /// Initialises one ship on the light, and one ship on the dark.
 pub fn initialise_ships(world: &mut World) {
+    
+    // Get SpriteSheetList
+    let sprite_sheet_list = {
+        world.try_fetch::<SpriteSheetList>().expect("Unable to fetch SpriteSheetList")
+    };
 
-    let light_sprite_sheet_handle = load_sprite_sheet(world, "texture/ship_spritesheet");
-    let dark_sprite_sheet_handle = load_sprite_sheet(world, "texture/dark_ship_spritesheet");
-
+    let light_sprite_sheet_handle = sprite_sheet_list.get(AssetType::LightShip).unwrap();
+    let dark_sprite_sheet_handle = sprite_sheet_list.get(AssetType::DarkShip).unwrap();
 
     let mut light_transform = Transform::default();
     let mut dark_transform = Transform::default();
@@ -61,12 +65,14 @@ pub fn initialise_ships(world: &mut World) {
     light_transform.rotate_2d(1.60);
     dark_transform.rotate_2d(-1.60);
 
-    let phys = Physical::new(43.0, 100.0, 1.25, 0.05);
+    let light_phys = Physical::new(43.0, 100.0, 1.25, 0.05);
+    let dark_phys = Physical::new(41.0, 100.0, 1.35, 0.05);
+
 
     // Correctly position the ships.
     let y = ARENA_HEIGHT / 2.0;
-    light_transform.set_translation_xyz(&phys.radius * 4.0, y, 0.0);
-    dark_transform.set_translation_xyz(ARENA_WIDTH - &phys.radius * 4.0, y, 0.0);
+    light_transform.set_translation_xyz(&light_phys.radius * 4.0, y, 0.0);
+    dark_transform.set_translation_xyz(ARENA_WIDTH - &dark_phys.radius * 4.0, y, 0.0);
 
     // Assign the sprites for the light ship
     let light_sprite_render = SpriteRender {
@@ -83,10 +89,6 @@ pub fn initialise_ships(world: &mut World) {
     // Load resources for adding thrust
     let lazy = world.try_fetch::<LazyUpdate>().expect("Unable to load LazyUpdate");
 
-    // show thruster
-    let sprite_sheet_list = {
-        world.try_fetch::<SpriteSheetList>().expect("Unable to fetch SpriteSheetList")
-    };
 
     // Get Sprite sheet handle
     let thrust_sprite_sheet_handle = sprite_sheet_list.get(AssetType::Thrust).unwrap();
@@ -102,8 +104,8 @@ pub fn initialise_ships(world: &mut World) {
     lazy.insert(light_ship, Ship::new(Side::Light));
     lazy.insert(light_ship, light_sprite_render.clone());
     lazy.insert(light_ship, light_transform);
-    lazy.insert(light_ship, phys.clone());
-    lazy.insert(light_ship, Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0));
+    lazy.insert(light_ship, light_phys.clone());
+    lazy.insert(light_ship, Combat::new(150, 5, 20, 6.0, 10.0, LaserType::Single, 0.2, 25, 30.0, 6.0, 5.0));
 
     // Create thrust entity for light ship
     let light_thrust = world.entities().create();
@@ -134,11 +136,14 @@ pub fn initialise_ships(world: &mut World) {
     lazy.insert(dark_ship, Ship::new(Side::Dark));
     lazy.insert(dark_ship, dark_sprite_render.clone());
     lazy.insert(dark_ship, dark_transform);
-    lazy.insert(dark_ship, phys.clone());
-    lazy.insert(dark_ship, Combat::new(150, 5, 20, 6.0, 10.0, 25, 30.0, 6.0, 5.0));
+    lazy.insert(dark_ship, dark_phys.clone());
+    lazy.insert(dark_ship, Combat::new(130, 5, 15, 4.0, 10.0, LaserType::Dual, 0.3, 25, 30.0, 6.0, 5.0));
 
     // Create thrust entity for dark ship
     let dark_thrust = world.entities().create();
+
+    // Set tint for dark thrust to yellow
+    let tint = Tint(Srgba::new(0.7, 0.7, 0., 1.));
     
     lazy.insert(
         dark_thrust,
@@ -151,11 +156,12 @@ pub fn initialise_ships(world: &mut World) {
     );
     lazy.insert(dark_thrust, Parent::new(dark_ship));
     let mut dark_thrust_transform = Transform::from(math::Vector3::<f32>::new(
-        0., -200., 0.
+        0., -240., 0.
     ));
     dark_thrust_transform.rotate_2d(-1.6);
 
     lazy.insert(dark_thrust, dark_thrust_transform);
     lazy.insert(dark_thrust, Transparent);
     lazy.insert(dark_thrust, Hidden);
+    lazy.insert(dark_thrust, tint);
 }

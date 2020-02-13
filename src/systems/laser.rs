@@ -6,7 +6,7 @@ use amethyst::{
     core::math::{Vector3, Vector2, UnitQuaternion, Translation3},
     core::SystemDesc,
     derive::SystemDesc,
-    renderer::transparent::Transparent,
+    renderer::{transparent::Transparent, SpriteRender},
     input::{InputHandler, StringBindings},
     ecs::prelude::{Entity, Join, Read, ReadExpect, Entities, ReadStorage, System, SystemData, World, WriteStorage, LazyUpdate},
 };
@@ -14,10 +14,11 @@ use amethyst::{
 use std::ops::Deref;
 use smallvec::SmallVec;
 
+use crate::resources::{SpriteSheetList, AssetType};
 use crate::audio::{play_laser_sound, Sounds};
-use crate::components::{LaserImpact, Laser, Ship, Side, LaserRes};
+use crate::components::{LaserImpact, Laser, Ship, Side};
 use crate::components::{Animation, AnimationId, AnimationPrefabData};
-use crate::components::{Physical, Combat};
+use crate::components::{Physical, Combat, LaserType};
 
 #[derive(SystemDesc)]
 pub struct LaserSystem;
@@ -26,9 +27,9 @@ impl<'s> System<'s> for LaserSystem {
 
     type SystemData = (
         Entities<'s>,
-        ReadExpect<'s, LaserRes>,
         WriteStorage<'s, Laser>,
         Read<'s, InputHandler<StringBindings>>,
+        Read<'s, SpriteSheetList>,
         ReadStorage<'s, Ship>,
         WriteStorage<'s, Combat>,
         WriteStorage<'s, Transform>,
@@ -43,9 +44,9 @@ impl<'s> System<'s> for LaserSystem {
 
     fn run(&mut self, (
         entities, 
-        laser_resource, 
         mut lasers, 
-        input, 
+        input,
+        sprite_sheet_list,
         ships, 
         mut combats, 
         mut transforms,
@@ -58,8 +59,8 @@ impl<'s> System<'s> for LaserSystem {
         for (ship, transform, combat) in (&ships, &mut transforms, &mut combats).join() {
             // does ship shoot?
             let shoot = match ship.side {
-                Side::Light => input.action_is_down("shoot").unwrap_or(false),
-                _ => false,
+                Side::Light => input.action_is_down("light_shoot").unwrap_or(false),
+                Side::Dark => input.action_is_down("dark_shoot").unwrap_or(false),
             };
 
             let mut new_lasers = SmallVec::<[NewLaser; 8]>::new();
@@ -72,7 +73,9 @@ impl<'s> System<'s> for LaserSystem {
                     let velocity = transform.rotation() * Vector3::y() * combat.laser_velocity;
     
                     let mut laser_t = transform.clone();
+
                     
+                    // Shoot single high-power laser
                     laser_t.append_translation(Vector3::new(0.0, 80.0, 0.0));
     
                     laser_t.set_scale(Vector3::new(4.0, 4.0, 0.0));
@@ -85,7 +88,7 @@ impl<'s> System<'s> for LaserSystem {
                         laser_t: laser_t.clone(),
                         physical: physical.clone(),
                     });
-                    
+                        
                 };
             } else {
                 combat.reload_timer -= time.delta_seconds();
@@ -101,16 +104,64 @@ impl<'s> System<'s> for LaserSystem {
 
             for new_laser in new_lasers {
 
-                let NewLaser { laser_t, physical } = new_laser;
+                match combat.laser_type {
+                    LaserType::Single => {
+                        let NewLaser { laser_t, physical } = new_laser;
+        
+                        let laser = Laser::new(combat.laser_timer, combat.laser_damage, ship.side);
 
-                let laser = Laser::new(combat.laser_timer, combat.laser_damage, ship.side);
-    
-                let e = entities.create();
+                        let light_laser_sprite_sheet_handle = sprite_sheet_list.get(AssetType::LaserLight).unwrap();
 
-                lazy.insert(e, laser);
-                lazy.insert(e, physical);
-                lazy.insert(e, laser_t);
-                lazy.insert(e, laser_resource.sprite_render());
+                         // Construct sprite render for light_laser
+                        let light_laser_sprite_render = SpriteRender {
+                            sprite_sheet: light_laser_sprite_sheet_handle.clone(),
+                            sprite_number: 0,
+                        };
+            
+                        let e = entities.create();
+        
+                        lazy.insert(e, laser);
+                        lazy.insert(e, physical);
+                        lazy.insert(e, laser_t);
+                        lazy.insert(e, light_laser_sprite_render.clone());
+                    }
+                    LaserType::Dual => {
+                        // Laser 1
+                        let NewLaser { mut laser_t, physical } = new_laser;
+
+                        laser_t.append_translation(Vector3::new(-25.0, 0.0, 0.0));
+                        laser_t.set_scale(Vector3::new(2., 2., 2.));
+
+                        let laser = Laser::new(combat.laser_timer, combat.laser_damage, ship.side);
+
+                        let dark_laser_sprite_sheet_handle = sprite_sheet_list.get(AssetType::LaserDark).unwrap();
+
+                        // Construct sprite render for thruster
+                        let dark_laser_sprite_render = SpriteRender {
+                            sprite_sheet: dark_laser_sprite_sheet_handle.clone(),
+                            sprite_number: 0,
+                        };
+            
+                        let e = entities.create();
+        
+                        lazy.insert(e, laser.clone());
+                        lazy.insert(e, physical);
+                        lazy.insert(e, laser_t.clone());
+                        lazy.insert(e, dark_laser_sprite_render.clone());
+
+                        // Laser 2
+
+                        laser_t.append_translation(Vector3::new(50.0, 0.0, 0.0));
+
+                        let f = entities.create();
+        
+                        lazy.insert(f, laser.clone());
+                        lazy.insert(f, physical);
+                        lazy.insert(f, laser_t.clone());
+                        lazy.insert(f, dark_laser_sprite_render.clone());
+                    }
+                }
+
             }
         }
 
