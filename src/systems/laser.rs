@@ -190,22 +190,13 @@ impl<'s> System<'s> for LaserSystem {
 pub fn show_laser_impact(
     entities: &Entities,
     prefab_handle: Handle<Prefab<AnimationPrefabData>>,
-    laser_x: f32,
-    laser_y: f32,
-    rotation: UnitQuaternion<f32>,
-    scale_m: f32,
+    mut transform: Transform,
     lazy_update: &ReadExpect<LazyUpdate>,
 ) {
     let laser_impact_entity: Entity = entities.create();
 
-    let scale = Vector3::new(scale_m, scale_m, scale_m);
-    let position = Translation3::new(laser_x, laser_y, 0.);
-
-    let transform = Transform::new(
-        position,
-        rotation,
-        scale,
-    );
+    transform.rotate_2d(-0.8);
+    transform.set_scale(Vector3::new(0.7, 0.7, 0.7));
 
     lazy_update.insert(laser_impact_entity, LaserImpact::default());
     lazy_update.insert(

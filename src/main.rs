@@ -98,6 +98,10 @@ fn main() -> amethyst::Result<()> {
             "laser_impact_animation_system",
             &["laser_system", "collision_system"],
         )
+        .with(AnimationControlSystem,
+            "animation_control_system",
+            &["laser_impact_animation_system"]
+        )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 // The RenderToWindow plugin provides all the scaffolding for opening a window and

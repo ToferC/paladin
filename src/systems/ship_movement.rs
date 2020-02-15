@@ -11,7 +11,6 @@ use amethyst::input::{InputHandler, StringBindings};
 use crate::audio::{play_thrust_sound, Sounds};
 use crate::components::{Ship, Side, Physical};
 use crate::components::{Thrust};
-use crate::resources::{AssetType, SpriteSheetList};
 
 use std::ops::Deref;
 

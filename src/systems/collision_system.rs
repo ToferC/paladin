@@ -54,12 +54,8 @@ impl<'s> System<'s> for CollisionSystem {
         for (laser, entity) in (&lasers, &entities).join() {
 
             // get laser coordinates
-            let (laser_x, laser_y, laser_rotation) = {
-                let trans = transforms.get(entity).expect("Unable to load laser transform");
-                let l_x = trans.translation().x;
-                let l_y = trans.translation().y;
-                let l_r = trans.rotation();
-                (l_x, l_y, l_r.clone())
+            let laser_transform = {
+                transforms.get(entity).expect("Unable to load laser transform").clone()
             };
 
             // get laser velocity - used for impact to ship velocity
@@ -73,8 +69,8 @@ impl<'s> System<'s> for CollisionSystem {
                 let ship_y = ship_transform.translation().y;
 
                 if circles_collide(
-                    laser_x,
-                    laser_y,
+                    laser_transform.translation().x,
+                    laser_transform.translation().y,
                     LASER_RADIUS,
 
                     ship_x,
@@ -97,13 +93,9 @@ impl<'s> System<'s> for CollisionSystem {
                     show_laser_impact(
                         &entities,
                         laser_impact_prefab_handle,
-                        laser_x,
-                        laser_y,
-                        laser_rotation,
-                        1.0,
+                        laser_transform.clone(),
                         &lazy_update,
                     );
-                    let _ = entities.delete(entity);
 
                     if combat.structure <= 0 {
                         // explode ship and delete

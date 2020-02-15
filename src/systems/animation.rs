@@ -27,15 +27,14 @@ impl<'s> System<'s> for LaserImpactAnimationSystem {
         mut animation_control_sets,
     ): Self::SystemData) {
         
-        for (entity, _, mut animation) in (
+        for (entity, _, mut animation, animation_control_set) in (
             &entities,
             &laser_impacts, 
             &mut animations,
+            &mut animation_control_sets,
         )
             .join() 
         {
-            let animation_control_set = get_animation_set(&mut animation_control_sets, entity).unwrap();
-
             if animation.show {
                 animation_control_set.start(animation.current);
                 animation.show = false;
@@ -75,12 +74,7 @@ impl<'s> System<'s> for AnimationControlSystem {
             if animation.show {
                 animation.types.iter().for_each(|&animation_id| {
                     if !animation_control_set.has_animation(animation_id) {
-                        println!(
-                            "Added animation with id {:?} for entity {:?}",
-                            animation_id,
-                            entity,
-                        );
-
+                        
                         let end = match animation_id {
                             AnimationId::LaserImpact => EndControl::Stay,
                             _ => EndControl::Loop(None),
@@ -89,7 +83,7 @@ impl<'s> System<'s> for AnimationControlSystem {
                             animation_id,
                             &animation_set.get(&animation_id).unwrap(),
                             end,
-                            0.1,
+                            1.,
                             AnimationCommand::Init,  
                         );
                     }

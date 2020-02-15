@@ -11,8 +11,8 @@ use crate::resources::assets::*;
 use crate::components::{initialise_ships};
 use crate::components::{initialize_scoreboard, initialize_ship_hp_ui};
 
-pub const ARENA_HEIGHT: f32 = 1024.0 * 1.2;
-pub const ARENA_WIDTH: f32 = 1600.0 * 1.2;
+pub const ARENA_HEIGHT: f32 = 1024.0 * 1.0;
+pub const ARENA_WIDTH: f32 = 1600.0 * 1.0;
 
 pub const LASER_RADIUS: f32 = 4.0;
 
