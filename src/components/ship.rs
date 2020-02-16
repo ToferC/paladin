@@ -14,7 +14,7 @@ use super::enemy::EnemyAi;
 use super::thrust::Thrust;
 use crate::resources::{SpriteSheetList, AssetType};
 
-use crate::paladin::{ARENA_HEIGHT, ARENA_WIDTH};
+use crate::states::{ARENA_HEIGHT, ARENA_WIDTH};
 
 pub const SHIP_SCALING: f32 = 0.20;
 

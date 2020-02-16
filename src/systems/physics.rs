@@ -2,7 +2,7 @@ use amethyst::core::{Transform, SystemDesc, Parent};
 use amethyst::derive::SystemDesc;
 use amethyst::ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage};
 
-use crate::paladin::{ARENA_HEIGHT, ARENA_WIDTH};
+use crate::states::{ARENA_HEIGHT, ARENA_WIDTH};
 use crate::components::Physical;
 
 #[derive(SystemDesc)]

@@ -7,7 +7,7 @@ use amethyst::{
     ecs::prelude::{Join, System, SystemData, World, Write, WriteStorage, ReadStorage, ReadExpect, Entities},
 };
 
-use crate::paladin::{ARENA_WIDTH, ARENA_HEIGHT};
+use crate::states::{ARENA_WIDTH, ARENA_HEIGHT};
 use crate::components::{Ship, Side, Physical, Combat};
 use crate::components::{ScoreBoard, ScoreText, StructureText};
 

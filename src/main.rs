@@ -5,6 +5,7 @@ mod systems;
 mod audio;
 mod resources;
 mod components;
+mod states;
 
 extern crate specs_derive;
 
@@ -26,7 +27,7 @@ use amethyst::{
 };
 
 use audio::Music;
-use crate::paladin::MainState;
+use crate::states::GameState;
 use crate::components::{AnimationPrefabData, AnimationId};
 use systems::*;
 
@@ -115,7 +116,7 @@ fn main() -> amethyst::Result<()> {
                 .with_plugin(RenderUi::default()),
         )?;
 
-    let mut game = Application::new(assets_dir, MainState::default(), game_data)?;
+    let mut game = Application::new(assets_dir, GameState::default(), game_data)?;
     game.run();
     Ok(())
 }

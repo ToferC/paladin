@@ -8,7 +8,7 @@ use amethyst::{
 
 use std::ops::Deref;
 
-use crate::paladin::{RandomGen, LASER_RADIUS};
+use crate::states::{RandomGen, LASER_RADIUS};
 use crate::audio::{play_impact_sound, Sounds};
 use crate::systems::laser::show_laser_impact;
 use crate::components::{Laser, Ship, Physical, Combat};
