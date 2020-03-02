@@ -11,7 +11,7 @@ extern crate specs_derive;
 
 use amethyst::{
     animation::AnimationBundle,
-    assets::{PrefabLoaderSystem, PrefabLoaderSystemDesc},
+    assets::{HotReloadBundle, PrefabLoaderSystemDesc},
     core::TransformBundle,
     prelude::*,
     audio::{AudioBundle, DjSystemDesc},
@@ -69,6 +69,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?
         // Add bundle for UI handling
         .with_bundle(UiBundle::<StringBindings>::new())?
+        .with_bundle(HotReloadBundle::default())?
         .with_bundle(AudioBundle::default())?
         .with_system_desc(
             DjSystemDesc::new(|music: &mut Music| music.music.next()),
@@ -117,7 +118,8 @@ fn main() -> amethyst::Result<()> {
         )?;
 
     let mut game = Application::new(
-        assets_dir, 
+        assets_dir,
+        //crate::states::WelcomeScreen::default(),
         Game::default(), 
         game_data)?;
 

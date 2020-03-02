@@ -1,6 +1,6 @@
 use amethyst::{
     assets::{ProgressCounter},
-    core::{transform::Transform, Parent},
+    core::{transform::Transform, Parent, Time},
     ecs::prelude::{Entity, WorldExt},
     prelude::*,
     input::{VirtualKeyCode, is_key_down, is_close_requested},
@@ -68,11 +68,12 @@ impl SimpleState for Game {
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
 
-        let world = &mut data.world;
-
-        world.maintain();
-
+        if !self.paused {
+            let world = &mut data.world;
+            world.maintain();
+        }
         Trans::None
+
     }
 
     fn handle_event(&mut self, _data: StateData<'_, GameData<'_, '_>>, event: StateEvent) -> SimpleTrans {
@@ -102,12 +103,20 @@ impl SimpleState for Game {
         }
     }
 
-    fn on_pause(&mut self, _data: StateData<'_, GameData<'_, '_>>) {
+    fn on_pause(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        let world = data.world;
+
         self.paused = true;
+        update_time_scale(self.paused, world);
+        log::info!("PAUSED");
     }
 
-    fn on_resume(&mut self, _data: StateData<'_, GameData<'_, '_>>) {
+    fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        let world = data.world;
+        
         self.paused = false;
+        update_time_scale(self.paused, world);
+
     }
 
     fn on_stop(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -131,6 +140,16 @@ fn initialise_camera(world: &mut World) {
         .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
         .with(transform)
         .build();
+}
+
+fn update_time_scale(paused: bool, world: &mut World) {
+    world
+        .write_resource::<Time>()
+        .set_time_scale(if paused {
+            0.0
+        } else {
+            1.0
+        });
 }
 
 pub struct RandomGen;

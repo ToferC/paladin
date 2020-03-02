@@ -1,6 +1,6 @@
-use amethyst::core::{Transform, SystemDesc, Parent};
+use amethyst::core::{Transform, SystemDesc, Time};
 use amethyst::derive::SystemDesc;
-use amethyst::ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage};
+use amethyst::ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage, Read};
 
 use crate::states::{ARENA_HEIGHT, ARENA_WIDTH};
 use crate::components::Physical;
@@ -12,10 +12,10 @@ impl<'s> System<'s> for PhysicsSystem {
     type SystemData = (
         WriteStorage<'s, Transform>,
         ReadStorage<'s, Physical>,
-        ReadStorage<'s, Parent>,
+        Read<'s, Time>,
     );
 
-    fn run(&mut self, (mut transforms, physicals, parent): Self::SystemData) {
+    fn run(&mut self, (mut transforms, physicals, _time): Self::SystemData) {
         for (transform, physical) in (&mut transforms, &physicals).join() {
 
             transform.prepend_translation_x(physical.velocity[0]);
