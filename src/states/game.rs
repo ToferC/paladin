@@ -23,6 +23,18 @@ pub const ARENA_WIDTH: f32 = 1600.0 * 1.0;
 
 pub const LASER_RADIUS: f32 = 4.0;
 
+#[derive(PartialEq)]
+pub enum CurrentState {
+    Disabled,
+    Enabled,
+}
+
+impl Default for CurrentState {
+    fn default() -> Self {
+        CurrentState::Disabled
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct Game {
     pub player_count: u8,
@@ -106,6 +118,8 @@ impl SimpleState for Game {
     fn on_pause(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
 
+        *world.write_resource() = CurrentState::Enabled;
+
         self.paused = true;
         update_time_scale(self.paused, world);
         log::info!("PAUSED");
@@ -113,6 +127,8 @@ impl SimpleState for Game {
 
     fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
+
+        *world.write_resource() = CurrentState::Disabled;
         
         self.paused = false;
         update_time_scale(self.paused, world);

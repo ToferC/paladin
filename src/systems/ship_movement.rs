@@ -102,7 +102,7 @@ impl<'s> System<'s> for MovementSystem {
                     if ship.thrust_timer <= 0.0 {
                         // play SFX
                         play_thrust_sound(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
-                        ship.thrust_timer = 2.0;
+                        ship.thrust_timer = 0.2;
                     } else {
                         ship.thrust_timer -= time.delta_seconds();
                     }

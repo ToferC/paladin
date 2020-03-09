@@ -1,6 +1,5 @@
 //! Pong Tutorial 2
 
-mod paladin;
 mod systems;
 mod audio;
 mod resources;
@@ -12,7 +11,7 @@ extern crate specs_derive;
 use amethyst::{
     animation::AnimationBundle,
     assets::{HotReloadBundle, PrefabLoaderSystemDesc},
-    core::TransformBundle,
+    core::{TransformBundle, SystemExt},
     prelude::*,
     audio::{AudioBundle, DjSystemDesc},
     renderer::{
@@ -27,7 +26,7 @@ use amethyst::{
 };
 
 use audio::Music;
-use crate::states::Game;
+use crate::states::{Game, CurrentState};
 use crate::components::{AnimationPrefabData, AnimationId};
 use systems::*;
 
@@ -77,30 +76,33 @@ fn main() -> amethyst::Result<()> {
             &[],
         )
         // Add systems
-        .with(systems::MovementSystem, "movement_system", &["input_system"]
+        .with(systems::MovementSystem.pausable(CurrentState::Disabled), 
+            "movement_system", &["input_system"]
         )
         .with(
-            systems::LaserSystem, "laser_system", &["input_system"]
+            systems::LaserSystem.pausable(CurrentState::Disabled),
+            "laser_system", &["input_system"]
         )
         .with(
-            systems::PhysicsSystem, "physics_system", &["movement_system"]
+            systems::PhysicsSystem.pausable(CurrentState::Disabled),
+            "physics_system", &["movement_system"]
         )
         .with(
-            systems::CollisionSystem,
+            systems::CollisionSystem.pausable(CurrentState::Disabled),
             "collision_system",
             &["laser_system", "physics_system"],
         )
         .with(
-            systems::WinnerSystem,
+            systems::WinnerSystem.pausable(CurrentState::Disabled),
             "winner_system",
             &["movement_system", "physics_system"],
         )
         .with(
-            LaserImpactAnimationSystem,
+            LaserImpactAnimationSystem.pausable(CurrentState::Disabled),
             "laser_impact_animation_system",
             &["laser_system", "collision_system"],
         )
-        .with(AnimationControlSystem,
+        .with(AnimationControlSystem.pausable(CurrentState::Disabled),
             "animation_control_system",
             &["laser_impact_animation_system"]
         )
@@ -120,6 +122,7 @@ fn main() -> amethyst::Result<()> {
     let mut game = Application::new(
         assets_dir,
         //crate::states::WelcomeScreen::default(),
+        //crate::states::MainMenu::default(),
         Game::default(), 
         game_data)?;
 

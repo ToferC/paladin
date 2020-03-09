@@ -15,6 +15,8 @@ use super::{
 
 use log::{info, warn};
 
+use crate::audio::initialize_audio;
+
 const BUTTON_START: &str = "start";
 const BUTTON_LOAD: &str = "load";
 const BUTTON_OPTIONS: &str = "options";
@@ -37,6 +39,9 @@ impl SimpleState for MainMenu {
         self.ui_root = 
             Some(world.exec(|mut creator: UiCreator<'_>|
                 creator.create("ui/menu.ron", ())));
+
+        initialize_audio(world);
+
     }
 
     fn update(&mut self, state_data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
