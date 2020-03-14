@@ -109,7 +109,7 @@ impl SimpleState for Game {
                 Trans::None
             }
             StateEvent::Input(input) => {
-                log::info!("Input Event detected {:?}", input);
+                //log::info!("Input Event detected {:?}", input);
                 Trans::None
             }
         }

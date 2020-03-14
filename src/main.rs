@@ -1,4 +1,4 @@
-//! Pong Tutorial 2
+//! Paladin learning game by ToferC
 
 mod systems;
 mod audio;

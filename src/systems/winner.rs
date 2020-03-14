@@ -8,7 +8,7 @@ use amethyst::{
 };
 
 use crate::states::{ARENA_WIDTH, ARENA_HEIGHT};
-use crate::components::{Ship, Side, Physical, Combat};
+use crate::components::{Ship, Side, Physical, Combat, Laser};
 use crate::components::{ScoreBoard, ScoreText, StructureText};
 
 #[derive(SystemDesc)]
@@ -18,6 +18,7 @@ impl<'s> System<'s> for WinnerSystem {
     type SystemData = (
         Entities<'s>,
         ReadStorage<'s, Ship>,
+        ReadStorage<'s, Laser>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, Physical>,
         WriteStorage<'s, Combat>,
@@ -29,7 +30,7 @@ impl<'s> System<'s> for WinnerSystem {
         ReadExpect<'s, ScoreText>,
     );
 
-    fn run(&mut self, (entities, ships, mut locals, mut physicals, mut combats, mut ui_text, struct_text, mut scores, score_text): Self::SystemData) {
+    fn run(&mut self, (entities, ships, lasers, mut locals, mut physicals, mut combats, mut ui_text, struct_text, mut scores, score_text): Self::SystemData) {
 
         let mut is_destroyed: bool;
 
@@ -72,7 +73,13 @@ impl<'s> System<'s> for WinnerSystem {
             };
 
             if is_destroyed {
-                // reset physics and reposition ships
+                // reset physics destroy lasers and reposition ships
+
+                // destroy lasers
+                for (entity, laser) in (&entities, &lasers).join() {
+                    entities.delete(entity).expect("Failed to delete laser");
+                }
+
                 // Correctly position the ships.
                 let y = ARENA_HEIGHT / 2.0;
     
