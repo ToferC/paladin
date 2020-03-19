@@ -26,7 +26,6 @@ use amethyst::{
 };
 
 use audio::Music;
-use crate::states::{Game, CurrentState};
 use crate::components::{AnimationPrefabData, AnimationId};
 use systems::*;
 
@@ -47,7 +46,7 @@ fn main() -> amethyst::Result<()> {
     // This line is not mentioned in the pong tutorial as it is specific to the context
     // of the git repository. It only is a different location to load the assets from.
     let assets_dir = app_root.join("assets");
-
+    
     let game_data = GameDataBuilder::default()
         // Prefabbundlecar
         .with_system_desc(
@@ -75,37 +74,6 @@ fn main() -> amethyst::Result<()> {
             "dj_system",
             &[],
         )
-        // Add systems
-        .with(systems::MovementSystem.pausable(CurrentState::Disabled), 
-            "movement_system", &["input_system"]
-        )
-        .with(
-            systems::LaserSystem.pausable(CurrentState::Disabled),
-            "laser_system", &["input_system"]
-        )
-        .with(
-            systems::PhysicsSystem.pausable(CurrentState::Disabled),
-            "physics_system", &["movement_system"]
-        )
-        .with(
-            systems::CollisionSystem.pausable(CurrentState::Disabled),
-            "collision_system",
-            &["laser_system", "physics_system"],
-        )
-        .with(
-            systems::WinnerSystem.pausable(CurrentState::Disabled),
-            "winner_system",
-            &["movement_system", "physics_system"],
-        )
-        .with(
-            LaserImpactAnimationSystem.pausable(CurrentState::Disabled),
-            "laser_impact_animation_system",
-            &["laser_system", "collision_system"],
-        )
-        .with(AnimationControlSystem.pausable(CurrentState::Disabled),
-            "animation_control_system",
-            &["laser_impact_animation_system"]
-        )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 // The RenderToWindow plugin provides all the scaffolding for opening a window and
@@ -119,12 +87,12 @@ fn main() -> amethyst::Result<()> {
                 .with_plugin(RenderUi::default()),
         )?;
 
-    let mut game = Application::new(
-        assets_dir,
-        //crate::states::WelcomeScreen::default(),
-        //crate::states::MainMenu::default(),
-        Game::default(), 
-        game_data)?;
+    let mut game: Application<GameData> = 
+        ApplicationBuilder::new(
+            assets_dir,
+            crate::states::WelcomeScreen::default()
+            )?
+            .build(game_data)?;
 
     game.run();
 

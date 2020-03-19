@@ -65,7 +65,7 @@ impl SimpleState for MainMenu {
 
     fn handle_event(
         &mut self,
-        _: StateData<'_, GameData<'_, '_>>,
+        data: StateData<'_, GameData<'_, '_>>,
         event: StateEvent,
     ) -> SimpleTrans {
         match event {
@@ -90,7 +90,7 @@ impl SimpleState for MainMenu {
                 }
                 if Some(target) == self.button_start {
                     log::info!("[Trans::Switch] Switching to Game!");
-                    return Trans::Switch(Box::new(Game::default()));
+                    return Trans::Switch(Box::new(Game::new(data.world)));
                 }
                 if Some(target) == self.button_load || Some(target) == self.button_options {
                     log::info!("This Button's functionality is not yet implemented!");

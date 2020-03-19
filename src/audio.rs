@@ -17,8 +17,8 @@ const IMPACT_SOUND: &str = "audio/impact.ogg";
 //const EXPLOSION_SOUND: &str = "audio/explosion.ogg";
 
 const MUSIC_TRACKS: &[&str] = &[
-    "audio/thrust_sequence.ogg",
-    "audio/raining_bits.ogg",
+    //"audio/thrust_sequence.ogg",
+    //"audio/raining_bits.ogg",
 ];
 
 pub struct Sounds {

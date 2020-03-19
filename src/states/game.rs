@@ -1,7 +1,9 @@
 use amethyst::{
-    assets::{ProgressCounter},
+    animation::AnimationBundle,
+    core::{TransformBundle, SystemExt},
+    prelude::*,    
     core::{transform::Transform, Parent, Time},
-    ecs::prelude::{Entity, WorldExt},
+    ecs::prelude::{Entity, WorldExt, Dispatcher, DispatcherBuilder},
     prelude::*,
     input::{VirtualKeyCode, is_key_down, is_close_requested},
     ui::{UiCreator, UiFinder, UiText},
@@ -9,7 +11,11 @@ use amethyst::{
     renderer::Camera,
 };
 
-use crate::audio::{initialize_audio};
+use crate::components::{AnimationPrefabData, AnimationId};
+use crate::systems::{CollisionSystem, MovementSystem, LaserSystem, PhysicsSystem,
+                LaserImpactAnimationSystem, WinnerSystem, AnimationControlSystem};
+
+use crate::audio::{initialize_audio, Music};
 use crate::resources::assets::*;
 
 use crate::components::{initialise_ships};
@@ -35,24 +41,69 @@ impl Default for CurrentState {
     }
 }
 
-#[derive(Default, Debug)]
 pub struct Game {
     pub player_count: u8,
     paused: bool,
     ui_root: Option<Entity>,
     fps_display: Option<Entity>,
     text: Option<Entity>,
+    dispatcher: Dispatcher<'static, 'static>,
+}
+
+impl Game {
+    pub fn new(world: &mut World) -> Self {
+
+        Game {
+            player_count: 2u8,
+            paused: false,
+            ui_root: None,
+            fps_display: None,
+            text: None,
+            dispatcher: DispatcherBuilder::new()
+
+            // Add systems
+            .with(MovementSystem.pausable(CurrentState::Disabled), 
+                "movement_system", &[]
+            )
+            .with(
+                LaserSystem.pausable(CurrentState::Disabled),
+                "laser_system", &[]
+            )
+            .with(
+                PhysicsSystem.pausable(CurrentState::Disabled),
+                "physics_system", &["movement_system"]
+            )
+            .with(
+                CollisionSystem.pausable(CurrentState::Disabled),
+                "collision_system",
+                &["laser_system", "physics_system", "movement_system"],
+            )
+            .with(
+                WinnerSystem.pausable(CurrentState::Disabled),
+                "winner_system",
+                &["movement_system", "physics_system"],
+            )
+            .with(
+                LaserImpactAnimationSystem.pausable(CurrentState::Disabled),
+                "laser_impact_animation_system",
+                &["laser_system", "collision_system"],
+            )
+            .with(AnimationControlSystem.pausable(CurrentState::Disabled),
+                "animation_control_system",
+                &["laser_impact_animation_system"]
+            )
+            .build(),
+        }
+    }
 }
 
 impl SimpleState for Game {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
 
-        let world = data.world;
-
-        // Load the spritesheet necessary to render the graphics.
-        // `spritesheet` is the layout of the sprites on the image;
-        // `texture` is the pixel data.
-
+        let mut world = data.world;
+        
+        self.dispatcher.setup(&mut world);
+        
         initialize_audio(world);
 
         let _progress_counter = Some(load_assets(
@@ -80,10 +131,10 @@ impl SimpleState for Game {
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
 
-        if !self.paused {
-            let world = &mut data.world;
-            world.maintain();
-        }
+        self.dispatcher.dispatch(&data.world);
+
+        data.data.update(&data.world);
+        
         Trans::None
 
     }
