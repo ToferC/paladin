@@ -127,6 +127,8 @@ impl SimpleState for Game {
 
         initialise_ships(world);
         initialise_camera(world);
+
+        world.maintain();
     }
 
     fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {

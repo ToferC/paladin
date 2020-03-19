@@ -171,7 +171,6 @@ impl<'s> System<'s> for CollisionSystem {
 
                 dark_physical.velocity[0] = -dark_physical.velocity[0];
                 dark_physical.velocity[1] = -dark_physical.velocity[1];
-
             }
         }
     }
