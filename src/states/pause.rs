@@ -73,7 +73,7 @@ impl SimpleState for PauseMenuState {
                     log::info!("[Trans::Pop] Closing Pause Menu!");
                     log::info!("[Trans::Switch] Switching to Main Menu!");
 
-                    Trans::None
+                    Trans::Switch(Box::new(super::menu::MainMenu::default()))
                 } else if Some(target) == self.exit_button {
                     Trans::Quit
                 } else {

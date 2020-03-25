@@ -3,7 +3,7 @@ use amethyst::{
     core::{TransformBundle, SystemExt},
     prelude::*,    
     core::{transform::Transform, Parent, Time},
-    ecs::prelude::{Entity, WorldExt, Dispatcher, DispatcherBuilder},
+    ecs::prelude::{Entity, Join, WorldExt, Dispatcher, DispatcherBuilder},
     prelude::*,
     input::{VirtualKeyCode, is_key_down, is_close_requested},
     ui::{UiCreator, UiFinder, UiText},
@@ -11,7 +11,7 @@ use amethyst::{
     renderer::Camera,
 };
 
-use crate::components::{AnimationPrefabData, AnimationId};
+use crate::components::{AnimationPrefabData, AnimationId, Physical};
 use crate::systems::{CollisionSystem, MovementSystem, LaserSystem, PhysicsSystem,
                 LaserImpactAnimationSystem, WinnerSystem, AnimationControlSystem};
 
@@ -195,6 +195,16 @@ impl SimpleState for Game {
         self.ui_root = None;
         self.fps_display = None;
         self.text = None;
+
+        let mut removable_entities: Vec<Entity> = Vec::new();
+
+        for (entity, _) in (&data.world.entities(), &data.world.read_storage::<Physical>()).join() {
+            removable_entities.push(entity);
+        }
+
+        data.world
+            .delete_entities(&removable_entities)
+            .expect("failed to delete entities");
     }
 }
 
