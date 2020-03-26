@@ -1,21 +1,19 @@
 use amethyst::{
-    animation::AnimationBundle,
-    core::{TransformBundle, SystemExt},
+    core::{SystemExt},
     prelude::*,    
     core::{transform::Transform, Parent, Time},
     ecs::prelude::{Entity, Join, WorldExt, Dispatcher, DispatcherBuilder},
     prelude::*,
+    ui::UiText,
     input::{VirtualKeyCode, is_key_down, is_close_requested},
-    ui::{UiCreator, UiFinder, UiText},
-    utils::fps_counter::FpsCounter,
     renderer::Camera,
 };
 
-use crate::components::{AnimationPrefabData, AnimationId, Physical};
+use crate::components::{Laser, Ship, StructureText, ScoreBoard, ScoreText};
 use crate::systems::{CollisionSystem, MovementSystem, LaserSystem, PhysicsSystem,
                 LaserImpactAnimationSystem, WinnerSystem, AnimationControlSystem};
 
-use crate::audio::{initialize_audio, Music};
+use crate::audio::{initialize_audio};
 use crate::resources::assets::*;
 
 use crate::components::{initialise_ships};
@@ -196,15 +194,39 @@ impl SimpleState for Game {
         self.fps_display = None;
         self.text = None;
 
-        let mut removable_entities: Vec<Entity> = Vec::new();
+        // delete ships
+        let mut ships: Vec<Entity> = Vec::new();
 
-        for (entity, _) in (&data.world.entities(), &data.world.read_storage::<Physical>()).join() {
-            removable_entities.push(entity);
+        for (entity, _) in (&data.world.entities(), &data.world.read_storage::<Ship>()).join() {
+            ships.push(entity);
         }
 
         data.world
-            .delete_entities(&removable_entities)
-            .expect("failed to delete entities");
+            .delete_entities(&ships)
+            .expect("failed to delete ships");
+
+        // delete lasers
+        let mut lasers: Vec<Entity> = Vec::new();
+
+        for (entity, _) in (&data.world.entities(), &data.world.read_storage::<Laser>()).join() {
+            lasers.push(entity);
+        }
+
+        data.world
+            .delete_entities(&lasers)
+            .expect("failed to delete lasers");
+
+        // delete ui_elements
+        let mut ui_elements: Vec<Entity> = Vec::new();
+
+        for (entity, _) in (&data.world.entities(), &data.world.read_storage::<UiText>()).join() {
+            ui_elements.push(entity);
+        }
+
+        data.world
+            .delete_entities(&ui_elements)
+            .expect("failed to delete ui_elements");
+
     }
 }
 

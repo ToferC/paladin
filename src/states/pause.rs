@@ -8,8 +8,6 @@ use amethyst::{
     TransEvent,
 };
 
-use super::menu::MainMenu;
-
 /// adapted from amethyst/examples/states_ui
 
 #[derive(Default)]
@@ -72,8 +70,12 @@ impl SimpleState for PauseMenuState {
 
                     log::info!("[Trans::Pop] Closing Pause Menu!");
                     log::info!("[Trans::Switch] Switching to Main Menu!");
-
-                    Trans::Switch(Box::new(super::menu::MainMenu::default()))
+                    state_transition_event_channel.single_write(Box::new(|| Trans::Pop));
+                    state_transition_event_channel
+                        .single_write(Box::new(
+                            || Trans::Switch(Box::new(super::menu::MainMenu::default()))));
+                
+                    Trans::None
                 } else if Some(target) == self.exit_button {
                     Trans::Quit
                 } else {
