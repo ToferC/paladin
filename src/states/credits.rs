@@ -20,7 +20,7 @@ impl SimpleState for CreditsScreen {
 
         self.ui_handle = 
             Some(world.exec(|mut creator: UiCreator<'_>|
-                creator.create("ui/credits/ron", ())));
+                creator.create("ui/credits.ron", ())));
     }
 
     fn handle_event(&mut self,

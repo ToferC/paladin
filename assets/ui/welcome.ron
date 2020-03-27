@@ -18,7 +18,7 @@ Container(
                 tab_order: 1,
                 anchor: Middle,
             ),
-            image: Texture(File("texture/logo.png", ("IMAGE", ()))),
+            image: Texture(File("texture/spaceships.jpg", ("IMAGE", ()))),
         ),
     ],
 )

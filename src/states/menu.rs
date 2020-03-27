@@ -17,16 +17,16 @@ use log::{info, warn};
 
 use crate::audio::initialize_audio;
 
-const BUTTON_START: &str = "start";
-const BUTTON_LOAD: &str = "load";
+const BUTTON_2P_START: &str = "2p_start";
+const BUTTON_1P_START: &str = "1p_start";
 const BUTTON_OPTIONS: &str = "options";
 const BUTTON_CREDITS: &str = "credits";
 
 #[derive(Default, Debug)]
 pub struct MainMenu {
     ui_root: Option<Entity>,
-    button_start: Option<Entity>,
-    button_load: Option<Entity>,
+    button_2p_start: Option<Entity>,
+    button_1p_start: Option<Entity>,
     button_options: Option<Entity>,
     button_credits: Option<Entity>,
 }
@@ -48,14 +48,14 @@ impl SimpleState for MainMenu {
         // only search for buttons if they have not been found yet
         let StateData { world, ..} = state_data;
 
-        if self.button_start.is_none()
-            || self.button_load.is_none()
+        if self.button_2p_start.is_none()
+            || self.button_1p_start.is_none()
             || self.button_options.is_none()
             || self.button_credits.is_none()
         {
             world.exec(|ui_finder: UiFinder<'_>| {
-                self.button_start = ui_finder.find(BUTTON_START);
-                self.button_load = ui_finder.find(BUTTON_LOAD);
+                self.button_2p_start = ui_finder.find(BUTTON_2P_START);
+                self.button_1p_start = ui_finder.find(BUTTON_1P_START);
                 self.button_options = ui_finder.find(BUTTON_OPTIONS);
                 self.button_credits = ui_finder.find(BUTTON_CREDITS);
             });
@@ -88,11 +88,11 @@ impl SimpleState for MainMenu {
                     log::info!("[Trans::Switch] Switching to CreditsScreen!");
                     return Trans::Switch(Box::new(CreditsScreen::default()));
                 }
-                if Some(target) == self.button_start {
+                if Some(target) == self.button_2p_start {
                     log::info!("[Trans::Switch] Switching to Game!");
                     return Trans::Switch(Box::new(Game::new(data.world)));
                 }
-                if Some(target) == self.button_load || Some(target) == self.button_options {
+                if Some(target) == self.button_1p_start || Some(target) == self.button_options {
                     log::info!("This Button's functionality is not yet implemented!");
                 }
                 Trans::None
@@ -107,8 +107,8 @@ impl SimpleState for MainMenu {
             delete_hierarchy(entity, data.world).expect("failed to remove MainMenu");
         }
         self.ui_root = None;
-        self.button_start = None;
-        self.button_load = None;
+        self.button_2p_start = None;
+        self.button_1p_start = None;
         self.button_options = None;
         self.button_credits = None;
     }

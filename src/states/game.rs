@@ -226,7 +226,6 @@ impl SimpleState for Game {
         data.world
             .delete_entities(&ui_elements)
             .expect("failed to delete ui_elements");
-
     }
 }
 

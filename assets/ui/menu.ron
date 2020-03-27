@@ -24,7 +24,7 @@ Container(
 
                 Button(
                     transform: (
-                        id: "start",
+                        id: "2p_start",
                         width: 750.,
                         height: 145.,
                         tab_order: 1,
@@ -32,7 +32,7 @@ Container(
                         mouse_reactive: true,
                     ),
                     button: (
-                        text: "START GAME",
+                        text: "2P START",
                         font: File("font/square.ttf", ("TTF", ())),
                         font_size: 75.,
                         normal_text_color: (1.0, 0.65, 0., 1.0), // ffa500
@@ -59,7 +59,7 @@ Container(
                 // Complex Button
                 Button(
                     transform: (
-                        id: "load",
+                        id: "1p_start",
                         width: 750.,
                         height: 145.,
                         tab_order: 3,
@@ -67,7 +67,7 @@ Container(
                         mouse_reactive: true,
                     ),
                     button: (
-                        text: "LOAD GAME",
+                        text: "1P START",
                         font: File("font/square.ttf", ("TTF", ())),
                         font_size: 75.,
                         normal_text_color: (1.0, 0.65, 0., 1.0), // ffa500
