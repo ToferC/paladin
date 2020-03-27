@@ -4,12 +4,19 @@ Paladin is a player vs. player or player vs. CPU duel in the vein of Star Contro
 
 ## Controls
 
+### Green Ship
+
 * 'W' == Thrust
 * 'A' == Rotate Counterclockwise
 * 'D' == Rotate Clockwise
 * 'SPACE' == Shoot Laser
-* 'Q' == Drift Left
-* 'E' == Drift Right
+
+### Red Ship
+
+* 'Up' == Thrust
+* 'Left' == Rotate Counterclockwise
+* 'Right' == Rotate Clockwise
+* 'Right CTRL' == Shoot Laser
 
 ## Game Physics
 
